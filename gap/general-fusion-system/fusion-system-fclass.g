@@ -1,13 +1,13 @@
 DeclareOperation("FConjugacyClass", [IsFusionSystem]);
 InstallMethod(FConjugacyClass, 
     "Returns all the $F$-conjugacy classes",
-    [IsFusionSystemRep and IsComponentObjectRep],
-    F -> List(F!.classes));
+    [IsFusionSystemRep],
+    F -> Union(List(F!.classes)));
 
 DeclareOperation("FClass", [IsFusionSystem, IsGroup]);
 InstallMethod(FClass, 
     "Return the $F$-conjugacy class of $Q$",
-    [IsFusionSystemRep and IsComponentObjectRep, IsGroup],
+    [IsFusionSystemRep, IsGroup],
     function(F, Q)
         local id, classes, class;
 
@@ -24,7 +24,7 @@ InstallMethod(FClass,
 DeclareOperation("AreFConjugate", [IsFusionSystem, IsGroup, IsGroup]);
 InstallMethod(AreFConjugate,
     "Checks whether $Q$ and $R$ are $F$-conjugate",
-    [IsFusionSystemRep and IsComponentObjectRep, IsGroup, IsGroup],
+    [IsFusionSystemRep, IsGroup, IsGroup],
     function(F, Q, R)
         local id_Q, id_R, classes, class, i, j;
 
@@ -52,3 +52,9 @@ InstallMethod(AreFConjugate,
             fi;
         od;
     end );
+
+DeclareOperation("AutF", [IsFusionSystem, IsGroup]);
+# TODO: Aut_F
+
+DeclareOperation("HomF", [IsFusionSystem, IsGroup, IsGroup]);
+# TODO: Hom_F
