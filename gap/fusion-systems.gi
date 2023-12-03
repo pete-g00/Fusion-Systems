@@ -1,18 +1,3 @@
-# Checks whether $P$ is a Sylow $p$-subgroup of $G$.
-IsSylowSubgroup := function(P, G, p)
-    local SizeP, i;
-
-    SizeP := Size(P);
-    i := LogInt(SizeP, p);
-    
-    # Must be a $p$-subgroup
-    if SizeP <> p^i then 
-        return false;
-    fi;
-
-    return Gcd(p^(i+1), Size(G)) = p^i;
-end;
-
 # Given 2 F-conjugate subgroups A and B, Aut_F(A) and an isomorphism phi \colon A \to B, constructs all the isomorphisms
 ConstructAllIsomorphisms := function(A, B, AutFA, phi)
     return List(AutFA, psi -> psi * phi);
@@ -164,7 +149,7 @@ InstallMethod(IsFullyAutomized,
         AutFQ := AutF(Q);
         Auts := AutomorphismGroup(Q);
 
-        return IsSylowSubgroup(AutFQ, Auts, Prime(F));
+        return IsSylowPSubgroup(AutFQ, Auts, Prime(F));
     end );
 
 # DeclareOperation("NPhi", [IsFusionSystem, IsGroupHomomorphism]);
@@ -178,7 +163,7 @@ InstallMethod(NPhi,
         Q := Source(phi);
         R := Range(phi);
 
-        CMap := ConjugationAuts(P, Q);
+        CMap := AutomizerHomomorphism(P, Q);
         AutPQ := Automizer(P, Q);
         AutPR := Automizer(P, R);
         AutPRPhi := ConjugateList(AutPR, InverseGeneralMapping(phi));
@@ -193,7 +178,7 @@ InstallMethod(IsFReceptive,
     "Given a fusion system $F$ on $P$, checks whether $Q$ is $F$-receptive",
     [IsFusionSystem, IsGroup],
     function (F, Q)
-        local QClass;
+        local QClass, R, Isoms, phi, LargerSet;
 
         QClass := FClass(Q);
         for R in QClass do 
@@ -222,23 +207,13 @@ InstallMethod(IsFCentric,
         QClass := FClass(F, Q);
         
         for R in QClass do 
-            if not (ContainsNormalizer(P, R)) then 
-                retun false;
+            if not ContainsNormalizer(UnderlyingGroup(F), R) then 
+                return false;
             fi;
         od;
 
         return true;
     end );
-
-# Finds the O_p(G) subgroup of G
-OpSubgroup := function(G, p)
-    local P, AllSylow;
-
-    P := SylowSubgroup(G, p);
-    AllSylow := P^G;
-
-    return Intersection(Elements(AllSylow));
-end;
 
 InstallMethod(IsFRadical,
     "Given a fusion system $F$ on $P$, checks whether $Q$ is $F$-radical",
@@ -246,7 +221,7 @@ InstallMethod(IsFRadical,
     function(F, Q)
         local Op, Inn;
 
-        Op := OpSubgroup(Q);
+        Op := OpSubgroup(Q, Prime(F));
         Inn := InnerAutomorphismGroup(Q);
 
         return Op = Inn;
@@ -254,3 +229,107 @@ InstallMethod(IsFRadical,
 
 # Every F-conjugacy class of subgroups contains a subgroup that is receptive and fully automized
 # DeclareOperation("IsSaturated", [IsFusionSystem]);
+
+InstallMethod(\=,
+    "Checks whether two fusion systems are equal",
+    [IsFusionSystem, IsFusionSystem],
+    function(F, E)
+        local ClassesE, ClassesF;
+
+        if IsIdenticalObj(F, E) then 
+            return true;
+        fi;
+
+        ClassesF := FClasses(F);
+        ClassesE := FClasses(E);
+
+        if Size(ClassesF) <> Size(ClassesE) then 
+            return false;
+        fi;
+
+        # for every class in F, check whether 
+    end );
+
+# # Tries to find an isomorphism between 2 fusion systems
+# # DeclareOperation("IsomorphismFusionSystems", [IsFusionSystem, IsFusionSystem]);
+# InstallMethod(IsomorphismFusionSystems,
+#     "Tries to find an isomorphism between 2 fusion systems",
+#     [IsFusionSystem, IsFusionSystem],
+#     function(F, E)
+#         local P1, P2, classesE, classesF;
+
+#         if IsIdenticalObj(F, E) then 
+#             return IdentityMapping(P1);
+#         fi;
+
+#         # try to find an isomorphism between the 2 groups
+
+#         P1 := UnderlyingGroup(F);
+#         P2 := UnderlyingGroup(E);
+#         phi := IsomorphismGroups(P1, P2);
+
+#         if phi = fail then 
+#             return fail;
+#         fi;
+
+#         # do preliminary checks before checking an isomorphism is a match
+
+#         # in particular, check that there are same number of F-classes and E-classes up to size, and that the sizes of each F-class and E-class up to size is just a permutation
+
+#         ClassesF := FClasses(F);
+#         ClassesE := FClasses(E);
+
+#         if Length(ClassesF) <> Length(ClassesE) then 
+#             return fail;
+#         fi;
+
+#         ClassesUpToSizeCheck := NewDictionary(0, true);
+#         EntriesUpToSizeCheck := NewDictionary(0, true);
+
+#         for ClassF in ClassesF do 
+#             RepSize := Size(Representative(ClassF));
+            
+#             ClassTotal := LookupDictionary(ClassesUpToSizeCheck, RepSize);
+#             if ClassTotal = fail then 
+#                 ClassTotal := 0;
+#             fi;
+#             AddDictionary(ClassesUpToSizeCheck, RepSize, ClassTotal + 1);
+
+#             SizeEntries := LookupDictionary(EntriesUpToSizeCheck, RepSize);
+#             if SizeEntries = fail then 
+#                 SizeEntries = [];
+#             fi;
+#             Add(SizeEntries, Size(ClassF));
+#             AddDictionary(EntriesUpToSizeCheck, RepSize, SizeEntries);
+#         od;
+
+#         for ClassE in ClassesE do 
+#             RepSize := Size(Representative(ClassE));
+
+#             ClassTotal := LookupDictionary(ClassesUpToSizeCheck, RepSize);
+#             if ClassTotal = fail or ClassTotal = 0 then 
+#                 return fail;
+#             fi;
+#             AddDictionary(ClassesUpToSizeCheck, RepSize, ClassTotal - 1);
+
+#             SizeEntries := LookupDictionary(EntriesUpToSizeCheck, RepSize);
+#             PrevSize := Length(SizeEntries);
+#             Remove(SizeEntries, Size(classE));
+#             # if nothing got removed, there cannot be a bijection between the F-conjugacy classes and E-conjugacy classes
+#             if Length(SizeEntries) = PrevSize then 
+#                 return false;
+#             fi;
+#         od;
+
+#         # TODO: Can also check the automorphism group size between the representatives
+
+#         # It is quite likely that we have an isomorphism now, and we need to figure out which one it is
+#         AutP := AutomorphismGroup(P);
+#         for sigma in AutP do 
+#             psi := aut * phi;
+#             inversePsi := InverseGeneralMapping(psi);
+
+#             isPsiIsomorphism := true;
+#             # Transport E to a fusion system on F and check this is equal => should make use of a common fn to not have redundant checks
+#         od;
+#     end );

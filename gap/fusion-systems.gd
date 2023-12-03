@@ -3,7 +3,9 @@
 # This is an abstract representation of a fusion system- we expect every representation to have these functionalities,
 # but they might have different implementatinos to make it optimal with respect to what we know about the given fusion system.
 
-# There are 2 kinds of attibutes/operations here- the first few must be implemented by every representation to make the fusion system work. This is the minimal set of attributes/operations a fusion system needs in order for us to define all the other operations. It is however possible that there are more efficient ways of computing the other operations/attibutes, and so these functionalities can also be overridden in a specific representation.
+# There are 2 kinds of attibutes/operations here- the first few must be implemented by every representation to make the fusion system work. 
+# This is the minimal set of attributes/operations a fusion system needs in order for us to define all the other operations. 
+# It is however possible that there are more efficient ways of computing the other operations/attibutes, and so these functionalities can also be overridden in a specific representation.
 
 
 # Defines the category of fusion systems
@@ -21,6 +23,9 @@ DeclareAttribute("UnderlyingGroup", IsFusionSystem);
 
 # Gives the prime of the fusion system
 DeclareAttribute("Prime", IsFusionSystem);
+
+# Returns all the F-conjugacy class. This is a list of conjugacy classes, but each conjugacy class need not be a list.
+DeclareOperation("FClasses", [IsFusionSystem]);
 
 # Returns the F-conjugacy class of a subgroup in F
 DeclareOperation("FClass", [IsFusionSystem, IsGroup]);
@@ -64,3 +69,6 @@ DeclareOperation("IsFRadical", [IsFusionSystem, IsGroup]);
 
 # Checks whether a fusion system is saturated
 DeclareProperty("IsSaturated", IsFusionSystem);
+
+# Tries to find an isomorphism between 2 fusion systems
+DeclareOperation("IsomorphismFusionSystems", [IsFusionSystem, IsFusionSystem]);
