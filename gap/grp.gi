@@ -1,60 +1,69 @@
 InstallMethod(IsSylowPSubgroup,
     "Checks whether $P$ is a Sylow $p$-subgroup of $G$",
-    [IsGroup, IsGroup, IsInt],
+    [IsGroup and IsFinite, IsGroup and IsFinite, IsInt],
     function(P, G, p)
-        local SizeP, i;
-
-        if not IsPrime(p) then 
-            Error(p, " is not a prime");
-        fi;
-
-        SizeP := Size(P);
-        i := LogInt(SizeP, p);
-        
-        # Must be a $p$-subgroup
-        if SizeP <> p^i then 
-            return false;
-        fi;
-
-        return Gcd(p^(i+1), Size(G)) = p^i;
+        return Size(P) = PValuation(Size(G), p);
     end );
 
-ComputeIntersection := function(G, AllSylow)
-    local it, int, syl;
+# # Not the best method for solvable groups, but quite good nonetheless
+# OpSubgroup_Alt := function (G, p)
+#     local   P,         # a Sylow-p subgroup
+#             R,         # the largest p-subgroup we know of
+#             C,         # one conjugacy class of <P>
+#             g,         # representative of a conjugacy class of <P>
+#             M;         # normal closure of <R> and <g>
 
-    it := Iterator(AllSylow);
-    int := NextIterator(it);
+#     P := SylowSubgroup(G, p);
+#     if IsNormal(G, P) then 
+#         return P;
+#     fi;
 
-    # Look at normal subgroups of a Sylow $p$-subgroup and compare?
-    # Look at 2 subgroups with maximal difference?
-    
-    while not IsDoneIterator(it) do
-        syl := NextIterator(it);
-        int := Intersection(int, syl);
-        if IsNormal(G, int) then 
-            return int;
-        fi;
-    od;
+#     R := TrivialSubgroup(G);
 
-    return int;
-end;
+#     for C in ConjugacyClasses(P) do
+#         g := Representative(C);
+#         if not g in R then
+#             M := NormalClosure(G, ClosureGroup(R, g));
+#             # increase the size of the normal p-subgroup as long as it is a p-group
+#             if PValuation(p, Size(M)) <> fail then
+#                 R := M;
+#             fi;
+#         fi;
+#     od;
 
-# TODO: This isn't fast! What about using the lattice to figure this out?
-# But lattice also isn't fast to compute?
+#     return R;
+# end;
+
 InstallMethod(OpSubgroup, 
     "Given a group $G$ and a prime $p$, computes the subgroup $O_p(G)$",
     [IsGroup, IsInt],
     function(G, p)
-        local P, AllSylow;
+        local P, Normals, Normal, Op, OpSize, i;
         
         if not IsPrime(p) then 
             Error(p, " is not a prime");
         fi;
 
         P := SylowSubgroup(G, p);
-        AllSylow := P^G;
+        if IsNormal(G, P) then 
+            return P;
+        fi;
 
-        return ComputeIntersection(G, AllSylow);
+        # Find the largest normal p-subgroup
+        Normals := NormalSubgroupsAbove(G, TrivialSubgroup(G), []);
+        
+        Op := Group(Identity(G));
+        OpSize := 0;
+
+        for Normal in Normals do 
+            i := PValuation(p, Size(Normal));
+            if i <> fail and i > OpSize then 
+                Op := Normal;
+                OpSize := i;
+            fi;
+        od;
+
+        return Op;
     end );
 
 InstallMethod(ConjugationHomomorphism,
@@ -71,15 +80,14 @@ InstallMethod(AutomizerHomomorphism,
     "Given $H \\leq G$, constructs the homomorphism $N_G(H) \\to \\Aut_G(H)$",
     [IsGroup, IsGroup],
     function(G, H)
-        local NGH, AutGens, Aut;
+        local NGH, Aut;
         
         if not IsSubset(G, H) then 
             Error("H is not a subset of G");
         fi;
 
         NGH := Normalizer(G, H);
-        AutGens := List(GeneratorsOfGroup(NGH), g -> ConjugationHomomorphism(H, H, g));
-        Aut := Group(AutGens);
+        Aut := Automizer(G, H);
 
         return GroupHomomorphismByFunction(NGH, Aut, g -> ConjugationHomomorphism(H, H, g));
     end );
@@ -88,7 +96,12 @@ InstallMethod(Automizer,
     "Constructs the automizer \\Aut_G(H) for $G \\leq H$",
     [IsGroup, IsGroup],
     function(G, H)
-        return Range(AutomizerHomomorphism(G, H));
+        local NGH, AutGens;
+        
+        NGH := Normalizer(G, H);
+        AutGens := List(GeneratorsOfGroup(NGH), g -> ConjugationHomomorphism(H, H, g));
+        
+        return Group(AutGens);
     end );
 
 # Comparisons for FindAutHom1 and FindAutHom2:
@@ -105,7 +118,7 @@ InstallMethod(Automizer,
 # 12 & 125 & 0
 # 13 & 390 & 16
 # 20 & 1890 & 32
-# Choosing FindAutHom1
+# Choosing FindAutHom2
 
 # FindAutHom1 := function(G, H)
 #     local NGH, Aut;

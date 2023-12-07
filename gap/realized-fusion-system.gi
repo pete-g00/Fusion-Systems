@@ -120,11 +120,44 @@ InstallMethod(RepresentativeFIsomorphism,
 #     return Filtered(Q^G, R -> IsSubset(P, R));
 # end;
 
+# This version is slower - check out how a conjugacy class is computed to see if there's some way to be more efficient
+# FClass_Alt := function(F, Q)
+#     local P, G, NGQ, Reps, elms, x;
+
+#     P := UnderlyingGroup(F);
+#     G := RealizingGroup(F);
+
+#     NGQ := Normalizer(G, Q);
+#     Reps := RightTransversal(G, NGQ);
+    
+#     elms := [];
+
+#     for x in Reps do
+#         if IsSubset(P, Q^x) then 
+#             Add(elms, Q^x);
+#         fi;
+#     od;
+
+#     return EnumeratorByFunctions(Domain(elms), rec(
+#         elms := elms,
+#         ElementNumber := function(enum, i)
+#             return enum!.elms[i];
+#         end,
+#         NumberElement := function(enum, R)
+#             return Position(enum!.elts, R);
+#         end,
+#         Length := enum -> Length(elms),
+#         PrintObj := function(enum)
+#             Print(Q, "^F");
+#         end,
+#     ));
+# end;
+
 InstallMethod(FClass,
     "Computes the $F$-conjugacy class of $Q$",
     [IsRealizedFusionSystemRep, IsGroup],
     function(F, Q)
-        local P, G, class, enum;
+        local P, G, class, enum, indices, i;
 
         P := UnderlyingGroup(F);
         G := RealizingGroup(F);
@@ -136,7 +169,7 @@ InstallMethod(FClass,
         # find the class Q^G and filter the subgroups that lie in P
         class := Q^G;
         enum := Enumerator(class);
-        indices = [];
+        indices := [];
 
         for i in [1..Size(class)] do 
             if IsSubset(P, enum[i]) then 
@@ -152,6 +185,9 @@ InstallMethod(FClass,
                 return Position(enum!.indices, Position(enum!.enum, val));
             end,
             Length := enum -> Length(indices),
+            PrintObj := function(enum)
+                Print(Q, "^F");
+            end,
             enum := enum,
             indices := indices,
         ));
@@ -232,6 +268,53 @@ InstallMethod(FClass,
 
 #         return F_Classes;
 # end;
+
+CompleteFClass := function(F)
+    local P, G, p, NGP, Q, QCoClasses, HaveEncountered, FCoClasses, class, A, NGA, Elms, Elm, i, j;
+
+    P := UnderlyingGroup(F);
+    G := RealizingGroup(F);
+    p := Prime(F);
+    
+    # # look at a Sylow p-subgroup of N_G(P)- computing conjugacy classes subgroups for a p-groups is much faster,
+    # # and by looking within the normalizer, we can easily filter the right conjugacy classes
+    NGP := Normalizer(G, P);
+    Q := SylowSubgroup(NGP, p);
+
+    QCoClasses := ConjugacyClassesSubgroups(Q);
+    HaveEncountered := List(QCoClasses , x -> false);
+    FCoClasses := [];
+    i := 1;
+
+    while i <= Length(QCoClasses) do 
+        if not HaveEncountered[i] then 
+            class := QCoClasses[i];
+            A := Representative(class);
+
+            if IsSubset(P, A) then 
+                NGA := Normalizer(G, A);
+                Elms := RightTransversal(G, NGA);
+
+                # Remove all the G-conjugates that weren't Q-conjugates
+                for Elm in Elms do 
+                    # TODO: How do we make this not redundant?
+                    if not (Elm in NGA) and IsSubset(P, A^Elm) then 
+                        j := Position(QCoClasses, (A^Elm)^Q, i);
+                        if j <> fail then 
+                            HaveEncountered[j] := true;
+                            i := i+1;
+                        fi;
+                    fi;
+                od;
+
+                Add(FCoClasses, FClass(F, A));
+            fi;
+        fi;
+        i := i+1;
+    od;
+
+    return FCoClasses;
+end;
 
 InstallMethod(FClasses,
     "Computes all the $F$-conjugacy classes",
