@@ -120,7 +120,7 @@ FindSubgroups := function(U, F, phi)
 
     # Map already exists - nothing to do
     if phi in HomF(F, A, B) then 
-        return G;
+        return [rec(x := fail, H := G)];
     fi;
 
     # the map \phi \colon A \to B should not lift to the subgroups in Avoid
@@ -157,11 +157,11 @@ end;
 # that the map source and range of the map phi are conjugate (or else there's no way of getting it)
 AllNonIdConjugate := function(G, A) 
     local x, y;
-    # Randomly pick a non-identity elt?
-    y := Elements(A)[2];
 
-    for x in A do 
-        if x <> Identity(G) and RepresentativeAction(G, x, y) = fail then
+    Vals := Filtered(A, g -> Order(g) = 2);
+
+    for x in Vals do 
+        if RepresentativeAction(G, x, y) = fail then
             return false;
         fi;
     od;
@@ -169,30 +169,43 @@ AllNonIdConjugate := function(G, A)
     return true;
 end;
 
-# FindC2C2AllConjugate := function(G, P)
-#     local Elts, a, b, c, A, B, C, F1, phi1, H, F2, phi2;
+FindC2C2AllConjugate := function(G, P)
+    local Elts, a, b, c, A, B, C, F1, phi1, Hs, H, F2, phi2, Subs;
 
-#     Elts := Filtered(P, x -> not x = Identity(P));
+    Elts := Filtered(P, x -> not x = Identity(P));
 
-#     a := Elts[1];
-#     b := Elts[2];
-#     c := Elts[3];
+    a := Elts[1];
+    b := Elts[2];
+    c := Elts[3];
 
-#     A := Group(a);
-#     B := Group(b);
-#     C := Group(c);
+    A := Group(a);
+    B := Group(b);
+    C := Group(c);
 
-#     F1 := RealizedFusionSystem(P, P, 2);
-#     phi1 := IsomorphismGroups(A, B);
+    phi1 := IsomorphismGroups(A, B);
+    phi2 := IsomorphismGroups(A, C);
+
+    F1 := RealizedFusionSystem(P, P, 2);
     
-#     H := FindSubgroup(G, F1, phi1);
-#     if H = fail then 
-#         return fail;
-#     fi;
-#     Print(H.x);
+    Hs := FindSubgroups(G, F1, phi1);
+    Subs := [];
+    
+    for H in Hs do 
+        F2 := RealizedFusionSystem(H.H, P, 2);
+        Append(Subs, FindSubgroups(G, F2, phi2));
+    od;
 
-#     F2 := RealizedFusionSystem(H.H, P, 2);
-#     phi2 := IsomorphismGroups(A, C);
+    return Subs;
+end;
 
-#     return FindSubgroup(G, F2, phi2);
-# end;
+FindC9Conjugate := function(G, P)
+    local a, A, phi, F;
+    
+    a := MinimalGeneratingSet(P)[1];
+    A := Group(a^3);
+
+    phi := GroupHomomorphismByImages(A, [a^3], [a^6]);
+    F := RealizedFusionSystem(P, P, 3);
+
+    return FindSubgroups(G, F, phi);
+end;

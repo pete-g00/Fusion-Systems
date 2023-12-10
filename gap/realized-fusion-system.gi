@@ -269,95 +269,95 @@ InstallMethod(FClass,
 #         return F_Classes;
 # end;
 
-CompleteFClass := function(F)
-    local P, G, p, NGP, Q, QCoClasses, HaveEncountered, FCoClasses, class, A, NGA, Elms, Elm, i, j;
-
-    P := UnderlyingGroup(F);
-    G := RealizingGroup(F);
-    p := Prime(F);
-    
-    # # look at a Sylow p-subgroup of N_G(P)- computing conjugacy classes subgroups for a p-groups is much faster,
-    # # and by looking within the normalizer, we can easily filter the right conjugacy classes
-    NGP := Normalizer(G, P);
-    Q := SylowSubgroup(NGP, p);
-
-    QCoClasses := ConjugacyClassesSubgroups(Q);
-    HaveEncountered := List(QCoClasses , x -> false);
-    FCoClasses := [];
-    i := 1;
-
-    while i <= Length(QCoClasses) do 
-        if not HaveEncountered[i] then 
-            class := QCoClasses[i];
-            A := Representative(class);
-
-            if IsSubset(P, A) then 
-                NGA := Normalizer(G, A);
-                Elms := RightTransversal(G, NGA);
-
-                # Remove all the G-conjugates that weren't Q-conjugates
-                for Elm in Elms do 
-                    # TODO: How do we make this not redundant?
-                    if not (Elm in NGA) and IsSubset(P, A^Elm) then 
-                        j := Position(QCoClasses, (A^Elm)^Q, i);
-                        if j <> fail then 
-                            HaveEncountered[j] := true;
-                            i := i+1;
-                        fi;
-                    fi;
-                od;
-
-                Add(FCoClasses, FClass(F, A));
-            fi;
-        fi;
-        i := i+1;
-    od;
-
-    return FCoClasses;
-end;
-
 InstallMethod(FClasses,
     "Computes all the $F$-conjugacy classes",
     [IsRealizedFusionSystemRep],
     function(F)
-        local P, G, i, A, B, Current_Class_List, F_Classes, Added, Classes, Co_Classes, Len;
-        
+        local P, G, p, NGP, Q, QCoClasses, HaveEncountered, FCoClasses, class, A, NGA, Elms, Elm, i, j;
+
         P := UnderlyingGroup(F);
         G := RealizingGroup(F);
-        Co_Classes := ConjugacyClassesSubgroups(P);
+        p := Prime(F);
+        
+        # # look at a Sylow p-subgroup of N_G(P)- computing conjugacy classes subgroups for a p-groups is much faster,
+        # # and by looking within the normalizer, we can easily filter the right conjugacy classes
+        NGP := Normalizer(G, P);
+        Q := SylowSubgroup(NGP, p);
 
-        # F_Class => dictionary with key the size of the groups, and values list of list of conjugacy classes (the normal representation of conjugacy classes)
-        # TODO: Use string keys- for small groups, use isomorphism class, but for big groups, just use the group size
-        F_Classes := NewDictionary(0, true);
+        QCoClasses := ConjugacyClassesSubgroups(Q);
+        HaveEncountered := List(QCoClasses , x -> false);
+        FCoClasses := [];
+        i := 1;
 
-        for i in [1..Size(Co_Classes)] do 
-            A := Representative(Co_Classes[i]);
-            Len := Size(A);
-            Current_Class_List := LookupDictionary(F_Classes, Len);
-            if Current_Class_List = fail then 
-                Current_Class_List := [];
-            fi;
-            
-            Added := false;
-            
-            for Classes in Current_Class_List do 
-                B := Representative(Classes);
-                if RepresentativeAction(G, A, B) <> fail then 
-                    Add(Classes, Co_Classes[i]);
-                    Added := true;
-                    break;
+        while i <= Length(QCoClasses) do 
+            if not HaveEncountered[i] then 
+                class := QCoClasses[i];
+                A := Representative(class);
+
+                if IsSubset(P, A) then 
+                    NGA := Normalizer(G, A);
+                    Elms := RightTransversal(G, NGA);
+
+                    # Remove all the G-conjugates that weren't Q-conjugates
+                    for Elm in Elms do 
+                        # TODO: How do we make this not redundant?
+                        if not (Elm in NGA) and IsSubset(P, A^Elm) then 
+                            j := Position(QCoClasses, (A^Elm)^Q, i);
+                            if j <> fail then 
+                                HaveEncountered[j] := true;
+                                i := i+1;
+                            fi;
+                        fi;
+                    od;
+
+                    Add(FCoClasses, FClass(F, A));
                 fi;
-            od;
-
-            if not Added then 
-                Add(Current_Class_List, [Co_Classes[i]]);
             fi;
-
-            AddDictionary(F_Classes, Len, Current_Class_List);
+            i := i+1;
         od;
 
-        return F_Classes;
+        return FCoClasses;
     end );
+
+# CompleteFClass := function(F)
+# local P, G, i, A, B, Current_Class_List, F_Classes, Added, Classes, Co_Classes, Len;
+
+# P := UnderlyingGroup(F);
+# G := RealizingGroup(F);
+# Co_Classes := ConjugacyClassesSubgroups(P);
+
+# # F_Class => dictionary with key the size of the groups, and values list of list of conjugacy classes 
+# (the normal representation of conjugacy classes)
+# # TODO: Use string keys- for small groups, use isomorphism class, but for big groups, just use the group size
+# F_Classes := NewDictionary(0, true);
+
+# for i in [1..Size(Co_Classes)] do 
+#     A := Representative(Co_Classes[i]);
+#     Len := Size(A);
+#     Current_Class_List := LookupDictionary(F_Classes, Len);
+#     if Current_Class_List = fail then 
+#         Current_Class_List := [];
+#     fi;
+    
+#     Added := false;
+    
+#     for Classes in Current_Class_List do 
+#         B := Representative(Classes);
+#         if RepresentativeAction(G, A, B) <> fail then 
+#             Add(Classes, Co_Classes[i]);
+#             Added := true;
+#             break;
+#         fi;
+#     od;
+
+#     if not Added then 
+#         Add(Current_Class_List, [Co_Classes[i]]);
+#     fi;
+
+#     AddDictionary(F_Classes, Len, Current_Class_List);
+# od;
+
+# return F_Classes;
 
 # InstallMethod(AreFConjugate,
 #     "Checks whether $A$ and $B$ are $F$-conjugate",
