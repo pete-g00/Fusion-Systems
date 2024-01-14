@@ -1,8 +1,3 @@
-DeclareRepresentation("IsTransportFusionSystemRep", 
-    IsComponentObjectRep and IsFusionSystem, ["fusion", "group", "phi", "phiInv"]);
-
-# TODO: For permutation groups, we need another method
-DeclareOperation("^", [IsFusionSystem, IsGroupHomomorphism]);
 InstallMethod(\^, 
     "Transports the given fusion system $F$ to the fusion system $F^phi$",
     [IsFusionSystem, IsGroupHomomorphism],
@@ -15,10 +10,6 @@ InstallMethod(\^,
             rec( fusion := F, group := Image(phi), phi := phi, phiInv := InverseGeneralMapping(phi)));
     end );
 
-ConjugateList := function (l, phi) 
-    return List(l, x -> Image(phi, x));
-end;
-
 InstallMethod(PrintObj, 
     "Prints a transport fusion system",
     [IsTransportFusionSystemRep],
@@ -29,7 +20,7 @@ InstallMethod(PrintObj,
 InstallMethod(FConjugacyClass, 
     "Returns all the $F$-conjugacy classes",
     [IsTransportFusionSystemRep],
-    F -> List(FConjugacyClass(F!.fusion), class -> ConjugateList(class, F!.phi)));
+    F -> List(FConjugacyClass(F!.fusion), class -> OnTuples(class, F!.phi)));
 
 InstallMethod(FClass,
     "Returns the $F$-conjugacy class of $Q$",
@@ -39,7 +30,7 @@ InstallMethod(FClass,
             Error("Q is not a subgroup!");
         fi;
 
-        return ConjugateList(FClass(F!.fusion, Image(F!.phiInv, Q)), F!.phi);
+        return OnTuples(FClass(F!.fusion, Image(F!.phiInv, Q)), F!.phi);
     end );
 
 InstallMethod(AreFConjugate,
@@ -78,5 +69,5 @@ InstallMethod(HomF,
             Error("R is not a subgroup!");
         fi;
         
-        return ConjugateList(HomF(F!.fusion, Image(F!.phiInv, Q), Image(F!.phiInv, R)), F!.phi);
+        return OnTuples(HomF(F!.fusion, Image(F!.phiInv, Q), Image(F!.phiInv, R)), F!.phi);
     end );
