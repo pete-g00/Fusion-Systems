@@ -1,8 +1,20 @@
-# TODO: Might be easier to do the iterator by delegating?
+InstallMethod(ConjugacyClassRepresentatives,
+    "Returns the conjugacy class representatives for the F-conjugacy class",
+    [IsFClassByCoClassesRep],
+    function(clA)
+        return clA!.reps;
+    end );
+
+InstallMethod(UnderlyingFusionSystem,
+    "Returns the underlying fusion system for the F-conjugacy class",
+    [IsFClassByCoClassesRep],
+    function(clA)
+        return clA!.F;
+    end );
 
 InstallMethod(PrintObj,
     "Prints a F-conjugacy class",
-    [FClass],
+    [IsFClass],
     function(class)
         local H;
 
@@ -10,130 +22,125 @@ InstallMethod(PrintObj,
         Print(H, "^F");
     end );
 
-InstallMethod(FClassByCoClasses,
-    "Constructs an F-conjugacy class from a list of conjugacy classes (i.e. collection of groups)",
-    [IsList],
-    function(classes)
-        if not IsHomogeneousList(classes) then 
-            Error("Must be a homogeneous list");
-        fi;
-        if IsEmpty(classes) then 
-            Error("Empty list");
-        fi;
-        if not IsCollection(classes[1]) then 
-            Error("Must be a list of collections");
-        fi;
-        if not IsGroup(Representative(classes[1])) then 
-            Error("Must be a list of groups");
-        fi;
+InstallMethod(\=,
+    "Checks whether two FClasses are equal",
+    [IsFClass, IsFClass],
+    function(clA, clB)
+        local F1, F2, A, B, phi1, phi2, repsA, repsB, P;
+        
+        F1 := UnderlyingFusionSystem(clA);
+        F2 := UnderlyingFusionSystem(clA);
 
-        return Objectify(
-            NewType(IteratorsFamily, IsIterator and IsCollection and FClassByCoClassesRep),
-            rec(classes := classes, classIdx := 1, classIter := Iterator(classes[1])));
-    end );
-
-InstallMethod(IsDoneIterator,
-    "Checks whether there is another group in the F-conjugacy class",
-    [FClassByCoClassesRep],
-    function(iter)
-        # if we're not at the end of the current iterator, we're fine
-        if not IsDoneIterator(iter!.classIter) then 
+        if UnderlyingGroup(F1) <> UnderlyingGroup(F2) then 
             return false;
         fi;
 
-        # if we are finished with this iterator, and there's no other iterator, we have finished iterating
-        return iter!.classIdx = Length(iter!.classes);
-    end );
+        if not CouldBeIsomorphic(Representative(clA), Representative(clB)) then 
+            return false;
+        fi;
 
-InstallMethod(NextIterator,
-    "Returns the next group in the F-conjugacy class",
-    [FClassByCoClassesRep and IsMutable],
-    function(iter)
-        local i;
+        A := Representative(clA);
+        B := Representative(clB);
 
-        if IsDoneIterator(iter!.classIter) then 
-            i := iter!.classIdx + 1;
-            
-            if i > Length(iter!.classes) then 
-                Error("Iteration completed.");
-            fi;
-            
-            iter!.classIter := Iterator(iter!.classes[i]);
+        phi1 := RepresentativeFIsomorphism(F1, A, B);
+        # if A and B are not F1-conjugate, then the F1-class of A doesn't contain B
+        if phi1 = fail then 
+            return false;
+        fi;
+
+        # if F1 and F2 are the same fusion systems, then there's nothing more to check
+        if IsIdenticalObj(F1, F2) then 
+            return true;
+        fi;
+
+        # the two Fclasses must have the same size
+        if Size(clA) <> Size(clB) then 
+            return false;
+        fi;
+
+        # if A and B are not F2-conjugate, then the F2-class of B doesn't contain A
+        phi2 := RepresentativeFIsomorphism(F2, A, B);
+        if phi2 = fail then 
+            return false;
         fi;
         
-        return NextIterator(iter!.classIter);
+        # check that there is a bijection between the co-cl representatives between the two
+        repsA := ConjugacyClassRepresentatives(A);
+        repsB := ConjugacyClassRepresentatives(B);
+
+        if Length(repsA) <> Length(repsB) then 
+            return false;
+        fi;
+        
+        P := UnderlyingGroup(F1);
+
+        return ForAll(repsA, Q -> ForAny(repsB, R -> Q^P = R^P));
     end );
 
-# Returns enum!.classes[i]
-ElementNumber := function(enum, i)
-    local cur_pos, class, class_size, class_enum;
+InstallMethod(\in,
+    "Checks whether an IsFClass contains a subgroup",
+    [IsFClass, IsGroup],
+    function(clA, B)
+        return AreFConjugate(UnderlyingFusionSystem(clA), Representative(clA), B);
+    end );
 
-    cur_pos := 0;
-    for class in enum!.classes do 
-        class_size := Size(class);
-        if i > cur_pos and i <= cur_pos + class_size then 
-            class_enum := Enumerator(class);
-            return class_enum[i - cur_pos];
-        fi;
-        cur_pos := cur_pos + Size(class);
-    od;
+InstallMethod(AsList,
+    "Returns a list of elements in the IsFClass",
+    [IsFClass],
+    function(clA)
+        local L, P, A;
 
-    Error("Element out of range 1-", cur_pos);
-end;
+        L := [];
+        P := UnderlyingGroup(UnderlyingFusionSystem(clA));
 
-# Returns the position of elt in enum!.classes
-NumberElement := function(enum, elt)
-    local cur_pos, class, class_enum, i;
+        for A in ConjugacyClassRepresentatives(clA) do 
+            Append(L, AsList(A^P));
+        od;
 
-    cur_pos := 0;
-    for class in enum!.classes do 
-        class_enum := Enumerator(class);
-        i := Position(class_enum, elt);
-        if i <> fail then 
-            return cur_pos + i;
-        fi;
-        cur_pos := cur_pos + Size(class);
-    od;
-
-    return fail;
-end;
-
-InstallMethod(Enumerator,
-    "Returns an enumerator for an F-conjugacy class",
-    [FClassByCoClassesRep],
-    function(iter)
-        return EnumeratorByFunctions(CollectionsFamily(FamilyObj(iter!.classes)),
-            rec(
-                classes := iter!.classes,
-                ElementNumber := ElementNumber,
-                NumberElement := NumberElement,
-                Length := enum -> Size(iter),
-                PrintObj := function(enum)
-                    Print("<enumerator of ", iter,">");
-                end 
-            ));
+        return L;
     end );
 
 InstallMethod(Size,
-    "Computes the size of the F-conjugacy class",
-    [FClassByCoClassesRep],
-    function(iter)
-        local size, class;
+    "Returns the size of the IsFClass",
+    [IsFClass],
+    function(clA)
+        local size, P, A;
 
         size := 0;
-        for class in iter!.classes do 
-            size := size + Size(class);
+        P := UnderlyingGroup(UnderlyingFusionSystem(clA));
+
+        for A in ConjugacyClassRepresentatives(clA) do 
+            size := size + Size(A^P);
         od;
 
         return size;
     end );
 
-# TODO: How do I transfer the enumerator functionalities to FClassRep?
 InstallMethod(Representative,
-    "Returns a representative from the F-conjugacy class",
-    [FClassByCoClassesRep],
-    iter -> Representative(Enumerator(iter)));
+    "Returns the size of the IsFClass",
+    [IsFClass],
+    function(clA)
+        return Representative(ConjugacyClassRepresentatives(clA));
+    end );
 
-InstallMethod(FClassBySubgroups,
-    "Constructs an F-conjugacy class from a list of groups",
-    [IsList]);
+InstallMethod(Enumerator,
+    "Returns an enumerator of the F-conjugacy class",
+    [IsFClass],
+    function(clA)
+        local P;
+
+        P := UnderlyingGroup(UnderlyingFusionSystem(clA));
+
+        return UnionEnumerator(
+            function()
+                Print("Enumerator of ", clA);
+            end,
+            List(ConjugacyClassRepresentatives(clA), Q -> Q^P)
+        );
+    end );
+
+InstallMethod(EnumeratorSorted,
+    "Returns an enumerator of the F-conjugacy class",
+    [IsFClass],
+    Enumerator
+);

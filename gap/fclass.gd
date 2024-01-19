@@ -1,16 +1,10 @@
-DeclareCategory("IsFClass", IsIterator and IsCollection );
+DeclareCategory("IsFClass", IsCollection );
 
-DeclareRepresentation("FClassByCoClassesRep",
-    IsComponentObjectRep and IsFClass, ["classes", "classIdx", "classIter"]);
+# Returns the underlying fusion system
+DeclareAttribute("UnderlyingFusionSystem", IsFClass);
 
-DeclareOperation("FClassByCoClasses", [IsList]);
+# Returns a representative for each conjugacy class representative of F-class
+DeclareAttribute("ConjugacyClassRepresentatives", IsFClass);
 
-DeclareRepresentation("FClassBySubgroupsRep",
-    IsComponentObjectRep and IsFClass, ["subgroups"]);
-
-DeclareOperation("FClassBySubgroups", [IsList]);
-
-DeclareRepresentation("FClassByFilteredCoClassRep",
-    IsComponentObjectRep and IsFClass, ["enum", "class"]);
-
-DeclareOperation("FClassFiltered", [IsCollection, IsGroup]);
+DeclareRepresentation("IsFClassByCoClassesRep",
+    IsComponentObjectRep and IsFClass, ["F", "reps"]);
