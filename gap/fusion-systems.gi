@@ -1,3 +1,57 @@
+CouldBeIsomorphic := function(A, B)
+    if Size(A) <> Size(B) then 
+        return false;
+    fi;
+    if IdGroupsAvailable(Size(A)) then 
+        return IdGroup(A)[2] = IdGroup(B)[2];
+    else 
+        return true;
+    fi;
+end;
+
+GroupByIsomType := function(L)
+    local Subs, i, C, Q, Cons, R, label;
+
+    L := ShallowCopy(L);
+    Sort(L, function(A, B)
+        if Size(A) <> Size(B) then 
+            return Size(A) <= Size(B);
+        fi;
+
+        if IdGroupsAvailable(Size(A)) then 
+            return IdGroup(A)[2] <= IdGroup(B)[2];
+        fi;
+
+        return true;
+    end );
+    
+    Subs := rec();
+    i := 1;
+
+    while i <= Length(L) do
+        Q := L[i];
+        Cons := [Q];
+        
+        while i+1 <= Length(L) and CouldBeIsomorphic(Q, L[i+1]) do 
+            i := i+1;
+            R := L[i];
+            Add(Cons, R);
+        od; 
+
+        i := i+1;
+
+        if IdGroupsAvailable(Size(Q)) then 
+            label := String(IdGroup(Q));
+        else 
+            label := Size(Q);
+        fi;
+
+        Subs.(label) := Cons;
+    od;
+    
+    return Subs;
+end;
+
 InstallMethod(ViewObj,
     "Prints a fusion system",
     [IsFusionSystem],
@@ -5,22 +59,39 @@ InstallMethod(ViewObj,
         Print("Fusion System on ", UnderlyingGroup(F));
     end );
 
-InstallMethod(FClassReps,
+InstallMethod(FClass,
+    "Returns the of $F$-conjugacy class of $Q$",
+    [IsFusionSystem, IsGroup],
+    function(F, Q)
+        return Objectify(
+            NewType(CollectionsFamily(FamilyObj(Q)), IsFClassByCoClassesRep),
+            rec(F := F, reps := FClassReps(F, Q))
+        );
+    end );
+
+InstallMethod(FClassesReps,
     "Returns a representative from each $F$-conjugacy class of $P$",
     [IsFusionSystem],
     function(F)
-        local C, Reps, c, Q;
+        local P, C, Reps, name, c, CReps, Q;
 
-        # go through every conjugacy class of P and take a representative from each F-class
-        C := ConjugacyClassesSubgroups(UnderlyingGroup(F));
+        P := UnderlyingGroup(F);
+        C := GroupByIsomType(List(ConjugacyClassesSubgroups(P), Representative));
         Reps := [];
 
-        for c in C do 
-            Q := Representative(c);
-
-            if ForAll(Reps, rep -> not AreFConjugate(F, rep, Q)) then 
-                Add(Reps, Q);
-            fi;
+        # C is a record, where the label gives us the size/group id, and 
+        # the elements are a representative from each conjugacy class for each
+        # of the subgroups
+        for name in RecNames(C) do 
+            c := C.(name);
+            # c is a list of subgroups
+            CReps := [];
+            for Q in c do 
+                if ForAll(CReps, rep -> not AreFConjugate(F, rep, Q)) then 
+                    Add(CReps, Q);
+                fi;
+            od;
+            Append(Reps, CReps);
         od;
 
         return Reps;
@@ -30,7 +101,7 @@ InstallMethod(FClasses,
     "Returns all the $F$-conjugacy classes of $P$",
     [IsFusionSystem],
     function(F)
-        return List(FClassReps(F), Q -> FClass(F, Q));
+        return List(FClassesReps(F), Q -> FClass(F, Q));
     end );
 
 InstallMethod(IsomF,
@@ -73,31 +144,15 @@ InstallMethod(ContainedFConjugates,
     "Returns all $F$-conjugates of $A$ that are contained in $B$",
     [IsFusionSystem, IsGroup, IsGroup],
     function(F, A, B)
-        local Cons, Q, phi;
-
-        if Size(A) > Size(B) then 
-            return [];
+        if Size(A) >= Size(B) then
+            if AreFConjugate(F, A, B) then 
+                return [B];
+            else 
+                return [];
+            fi;
         fi;
-
-        if Size(A) < Size(B) then 
-            Cons := [];
-            
-            for Q in FClass(F, A) do 
-                if IsSubset(B, Q) then 
-                    phi := RepresentativeFIsomorphism(F, A, Q);
-                    Add(Cons, [Q, phi]);
-                fi;
-            od;
-
-            return Cons;
-        fi;
-
-        phi := RepresentativeFIsomorphism(F, A, B);
-        if phi <> fail then 
-            return [[B, phi]];
-        fi;
-
-        return [];
+        
+        return Filtered(FClass(F, A), Q -> IsSubset(B, Q));
     end );
 
 # TODO: Is CollectionsFamily correct?
@@ -107,16 +162,11 @@ InstallMethod(HomF,
     "Returns the Hom-$F$ set of $A, B \\leq P$",
     [IsFusionSystem, IsGroup, IsGroup],
     function(F, A, B)
-        local printFn, type;
-
-        printFn := function()
+        return UnionEnumerator(function()
             Print("HomF(", A, ",", B, ")");
-        end;
-
-        type := CollectionsFamily(FamilyObj(UnderlyingGroup(F)));
-
-        return UnionEnumerator(printFn, List(ContainedFConjugates(F, A, B), Q -> EnumeratorByFunctions(
-            type, rec(
+        end,
+        List(ContainedFConjugates(F, A, B), Q -> EnumeratorByFunctions(CollectionsFamily(FamilyObj(UnderlyingGroup(F))),
+            rec(
                 ElementNumber := function( enum, n ) 
                     local phi;
                     
@@ -140,9 +190,9 @@ InstallMethod(HomF,
                 PrintObj := function( enum ) 
                     Print("HomF(",A, ",", B, ") with image ", Q);
                 end,
-                maps := IsomF(F, A, Q[1]),
-            ))),
-        type);
+                maps := IsomF(F, A, Q),
+            )))
+        );
     end );
 
 InstallMethod(AreFConjugate, 
@@ -150,6 +200,36 @@ InstallMethod(AreFConjugate,
     [IsFusionSystem, IsGroup, IsGroup],
     function (F, A, B) 
         return RepresentativeFIsomorphism(F, A, B) <> fail;
+    end );
+
+InstallMethod(\in,
+    "Checks whether $\\phi$ lies in $F$",
+    [IsGroupHomomorphism, IsFusionSystem],
+    function (phi, F)
+        local A, B, psi;
+
+        if not IsInjective(phi) then 
+            return false;
+        fi;
+        
+        A := Source(phi);
+        B := Range(phi);
+        
+        if not (IsSubset(A, UnderlyingGroup(F)) or IsSubset(B, UnderlyingGroup(F))) then 
+            return false;
+        fi;
+
+        B := Image(phi);
+        
+        psi := RepresentativeFIsomorphism(F, A, B);
+
+        if psi = fail then 
+            return false;
+        fi;
+
+        phi := RestrictedInverseGeneralMapping(phi);
+
+        return psi*phi in AutF(F, A);
     end );
 
 InstallMethod(IsFullyNormalized,
@@ -161,7 +241,11 @@ InstallMethod(IsFullyNormalized,
         P := UnderlyingGroup(F);
         NPQ := Normalizer(P, Q);
 
-        return ForAll(FClass(F, Q), R -> Size(NPQ) >= Size(Normalizer(P, R)));
+        if NPQ = P then 
+            return true;
+        fi;
+
+        return ForAll(FClassReps(F, Q), R -> Size(NPQ) >= Size(Normalizer(P, R)));
     end );
 
 InstallMethod(IsFullyCentralized,
@@ -173,7 +257,11 @@ InstallMethod(IsFullyCentralized,
         P := UnderlyingGroup(F);
         CPQ := Centralizer(P, Q);
 
-        return ForAll(FClass(F, Q), R -> Size(CPQ) >= Size(Centralizer(P, R)));
+        if CPQ = P then 
+            return true;
+        fi;
+
+        return ForAll(FClassReps(F, Q), R -> Size(CPQ) >= Size(Centralizer(P, R)));
     end );
 
 InstallMethod(IsFullyAutomized,
@@ -218,12 +306,9 @@ InstallMethod(ExtendMapToNPhi,
     "Tries to extend the map $\\phi$ to $N_\\phi$",
     [IsFusionSystem, IsGroupHomomorphism],
     function(F, phi)
-        local N, R, P, L;
+        local L;
 
-        N := NPhi(F, phi);
-        R := Image(phi);
-        P := UnderlyingGroup(F);
-        L := HomF(F, N, Normalizer(P, R));
+        L := HomF(F, NPhi(F, phi), Normalizer(UnderlyingGroup(F), Image(phi)));
 
         return FindHomExtension(phi, L);
     end );
@@ -232,7 +317,7 @@ InstallMethod(IsFReceptive,
     "Checks whether $Q$ is $F$-receptive",
     [IsFusionSystem, IsGroup],
     function (F, Q)
-        return ForAll(FClass(F, Q), 
+        return ForAll(FClassReps(F, Q), 
             R -> ForAll(IsomF(F, R, Q), phi -> ExtendMapToNPhi(F, phi) <> fail));
     end );
 
@@ -240,8 +325,8 @@ InstallMethod(IsSaturated,
     "Checks whether the fusion system is saturated",
     [IsFusionSystem],
     function(F)
-        return ForAll(FClasses(F), C -> 
-            ForAny(C, Q -> IsFullyNormalized(F, Q) and IsFReceptive(F, Q))
+        return ForAll(FClassesReps(F), Q -> 
+            ForAny(FClassReps(F, Q), R -> IsFullyAutomized(F, R) and IsFReceptive(F, R))
         );
     end );
 
@@ -249,38 +334,24 @@ InstallMethod(IsFCentric,
     "Checks whether $Q$ is $F$-centric",
     [IsFusionSystem, IsGroup],
     function(F, Q)
-        local P, QClass, R, NPR;
-
-        P := UnderlyingGroup(F);
-        QClass := FClass(F, Q);
-        
-        for R in QClass do 
-            NPR := Normalizer(P, R);
-            if not IsSubset(R, NPR) then 
-                return false;
-            fi;
-        od;
-
-        return true;
+        return ForAll(FClassReps(F, Q), 
+            R -> IsSubset(R, Normalizer(UnderlyingGroup(F), R)));
     end );
 
 InstallMethod(IsFRadical,
     "Checks whether $Q$ is $F$-radical",
     [IsFusionSystem, IsGroup],
     function(F, Q)
-        local Op, Inn;
-
-        Op := PCore(Q, Prime(F));
-        Inn := InnerAutomorphismGroup(Q);
-
-        return Op = Inn;
+        return PCore(Q, Prime(F)) = InnerAutomorphismGroup(Q);
     end );
+
+# TODO: `IsEssentialSubgroup(P, A)` that takes a p-group `P` and a subgroup `A`, and checks whether `A` is an essential subgroup.
 
 InstallMethod(\=,
     "Checks whether two fusion systems are equal",
     [IsFusionSystem, IsFusionSystem],
     function(F, E)
-        local ClassesF, ClassesE, classF, A, classE, Auts, sigma, i;
+        local classF, A, classE, Auts, sigma, i;
 
         if IsIdenticalObj(F, E) then 
             return true;
@@ -290,26 +361,17 @@ InstallMethod(\=,
             return false;
         fi;
 
-        ClassesF := FClasses(F);
-        ClassesE := [];
-
         # compute the E-conjugacy classes and check they are the same as classes in F
-        for classF in ClassesF do 
-            A := Representative(classF);
-            classE := FClass(E, A);
-            if not IsEqualSet(classE, classF) then 
-                return false;
-            fi;
-        od;
-
-        return true;
+        # check whether the size of the automorphism groups match and the F-classes
+        return ForAll(FClassesReps(F), 
+            Q -> AutF(F, Q) = AutF(E, Q) and FClass(F, Q) = FClass(E, Q));
     end );
 
 InstallMethod(IsomorphismFusionSystems,
     "Tries to find an isomorphism between 2 fusion systems",
     [IsFusionSystem, IsFusionSystem],
     function(F, E)
-        local P1, P2, phi, Auts, classes, class, sigma, TransportedF;
+        local P1, P2, phi, Auts, psi, sigma;
 
         if IsIdenticalObj(F, E) then 
             return IdentityMapping(UnderlyingGroup(F));
@@ -326,12 +388,11 @@ InstallMethod(IsomorphismFusionSystems,
         fi;
 
         Auts := AutomorphismGroup(P1);
-        classes := ConjugacyClass(Auts);
+        # any map in automorphism of P1 (as a fusion system) won't yield us anything, so we can transverse it?
 
-        for class in classes do 
-            sigma := phi*Representative(class);
-            TransportedF := F^sigma;
-            if TransportedF = E then 
+        for psi in RightTransversal(Auts, AutF(F, P1)) do 
+            sigma := psi*phi;
+            if F^sigma = E then 
                 return sigma;
             fi;
         od;

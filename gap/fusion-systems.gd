@@ -31,11 +31,18 @@ DeclareOperation("AutF", [IsFusionSystem, IsGroup]);
 DeclareOperation("RepresentativeFIsomorphism", [IsFusionSystem, IsGroup, IsGroup]);
 
 # 
-# These operations have been implemented in the general case, but can be overriden if there are more efficient ways of computing them
+# It is strongly encouraged that these 2 operations be overriden for efficiency.
 # 
 
+# Returns a representative from each conjugacy classes of $F$-conjugacy class of subgroups of $P$
+DeclareOperation("FClassReps", [IsFusionSystem, IsGroup]);
+
 # Returns a representative from each $F$-conjugacy classes of subgroups of $P$
-DeclareAttribute("FClassReps", IsFusionSystem);
+DeclareAttribute("FClassesReps", IsFusionSystem);
+
+# 
+# These operations have been implemented in the general case, but can be overriden if there are more efficient ways of computing them
+# 
 
 # Returns the F-conjugacy class of a subgroup in F
 DeclareOperation("FClass", [IsFusionSystem, IsGroup]);
@@ -51,6 +58,9 @@ DeclareOperation("ContainedFConjugates", [IsFusionSystem, IsGroup, IsGroup]);
 
 # Returns the Hom-F set of two subgroups in F
 DeclareOperation("HomF", [IsFusionSystem, IsGroup, IsGroup]);
+
+# Checks whether a group homomorphism lies in the fusion system
+DeclareOperation("in", [IsGroupHomomorphism, IsFusionSystem]);
 
 # Checks whether two subgroups in F are F-conjugate
 DeclareOperation("AreFConjugate", [IsFusionSystem, IsGroup, IsGroup]);

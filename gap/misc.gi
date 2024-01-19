@@ -125,12 +125,29 @@ InstallMethod(FindCentralizingHomExtension,
         return First(L, psi -> CentralizesSubgroup(psi, H) and IsRestrictedHomomorphism(phi, psi));
     end );
 
-InstallGlobalFunction(UnionEnumerator, function(printFn, colls, type)
-    if not IsEmpty(colls) and ForAll(colls, coll -> IsListOrCollection(colls) and FamilyObj(colls) = FamilyObj(colls[1])) then 
+InstallGlobalFunction(UnionEnumerator, function(printFn, colls, fam...)
+    local LenFn;
+
+    if IsEmpty(fam) then 
+        if IsEmpty(colls) then 
+            Error("Type not given for an empty collection");
+        fi;
+
+        fam := FamilyObj(colls[1]);
+    else 
+        fam := fam[1];
+    fi;
+
+    LenFn := Length;
+    if not IsEmpty(colls) and IsCollection(colls[1]) then 
+        LenFn := Size;
+    fi;
+
+    if ForAll(colls, coll -> IsListOrCollection(colls) and FamilyObj(colls) = fam) then 
         Error("Not all collections or collections of different type provided");
     fi;
 
-    return EnumeratorByFunctions(type,
+    return EnumeratorByFunctions(CollectionsFamily(fam),
         rec(
             ElementNumber := function ( enum, n )
                 local i, k;
@@ -138,8 +155,8 @@ InstallGlobalFunction(UnionEnumerator, function(printFn, colls, type)
                 i := 0;
                 k := 1;
                 
-                while n > i + Length(enum!.colls[k]) do 
-                    i := i + Length(enum!.colls[k]);
+                while n > i + LenFn(enum!.colls[k]) do 
+                    i := i + LenFn(enum!.colls[k]);
                     k := k+1;
                 od;
                 
@@ -149,13 +166,13 @@ InstallGlobalFunction(UnionEnumerator, function(printFn, colls, type)
                 local offset, k, i;
 
                 offset := 0;
-                for k in [1..Length(enum!.colls)] do
+                for k in [1..LenFn(enum!.colls)] do
                     i := Position(enum!.colls[k], elm);
                     if i <> fail then 
                         return offset + i;
                     fi;
 
-                    offset := offset + Length(enum!.colls[k]);
+                    offset := offset + LenFn(enum!.colls[k]);
                 od;
 
                 return fail;
