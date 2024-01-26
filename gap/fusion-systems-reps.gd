@@ -21,4 +21,4 @@ DeclareOperation("GeneratedFusionSystem", [IsFusionSystem, IsCollection]);
 DeclareOperation("GeneratedFusionSystem", [IsGroup, IsScalar, IsCollection]);
 
 DeclareRepresentation("IsGeneratedFusionSystemRep", 
-    IsComponentObjectRep and IsFusionSystem, ["F", "NewAuts"]);
+    IsComponentObjectRep and IsFusionSystem, ["F", "Reps", "Isoms", "ClassReps", "NewFAuts"]);

@@ -191,8 +191,8 @@ InstallMethod(HomF,
                     Print("HomF(",A, ",", B, ") with image ", Q);
                 end,
                 maps := IsomF(F, A, Q),
-            )))
-        );
+            ))),
+        FamilyObj(UnderlyingGroup(F)));
     end );
 
 InstallMethod(AreFConjugate, 
@@ -282,24 +282,30 @@ InstallMethod(NPhi,
     "Given a fusion system $F$ on $P$ and a map $\\phi$ in $F$, computes $N_\\phi$",
     [IsFusionSystem, IsGroupHomomorphism],
     function(F, phi)
-        local P, Q, R, CMap, AutPQ, AutPR, AutPRPhi, Aut;
+        local P, Q, R, CPQ, NPQ, AutGR, NPhiGens, QCPQ, g;
 
         P := UnderlyingGroup(F);
         Q := Source(phi);
-        R := Range(phi);
+        R := Image(phi);
 
-        if not (IsSubset(P, Q) and IsSubset(P, R)) then 
-            Error("The map doesn't lie in F");
-        fi;
+        CPQ := Centralizer(P, Q);
+        NPQ := Normalizer(P, Q);
+        AutGR := Automizer(P, R);
 
-        CMap := AutomizerHomomorphism(P, Q);
-        AutPQ := Automizer(P, Q);
-        AutPR := Automizer(P, R);
-        AutPRPhi := Group(OnTuples(GeneratorsOfGroup(AutPR), InverseGeneralMapping(phi)));
-        Aut := Intersection(AutPQ, AutPRPhi);
+        NPhiGens := Union(GeneratorsOfGroup(Q), GeneratorsOfGroup(CPQ));
+        QCPQ := Group(NPhiGens);
 
-        # TODO: Computing preimage isn't fast! Maybe this should be done using the other way?
-        return PreImages(CMap, Aut);
+        for g in RightTransversal(NPQ, QCPQ) do 
+            if not g in Group(NPhiGens) and ConjugatorAutomorphismNC(P, g)^phi in AutGR then 
+                Add(NPhiGens, g);
+
+                if Group(NPhiGens) = NPQ then 
+                    return NPQ;
+                fi;
+            fi;
+        od;
+
+        return Group(NPhiGens);
     end );
 
 InstallMethod(ExtendMapToNPhi,

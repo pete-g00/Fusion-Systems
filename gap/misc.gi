@@ -19,10 +19,15 @@ InstallMethod(Automizer,
     "Constructs the automizer \\Aut_G(H) for $G \\leq H$",
     [IsGroup, IsGroup],
     function(G, H)
-        local NGH, AutGens, AutG;
+        local NGH, CGH, phi, AutGens, AutG;
         
         NGH := Normalizer(G, H);
-        AutGens := List(GeneratorsOfGroup(NGH), g -> ConjugationHomomorphism(H, H, g));
+        CGH := Centralizer(G, H);
+
+        phi := NaturalHomomorphismByNormalSubgroupNC(NGH, CGH);
+
+        AutGens := List(GeneratorsOfGroup(Image(phi)), 
+            psi -> ConjugatorAutomorphismNC(H, PreImagesRepresentative(phi, psi)));
         
         AutG := Group(AutGens);
         SetIsAutomorphismGroup(AutG, true);
@@ -34,16 +39,20 @@ InstallMethod(AutomizerHomomorphism,
     "Given $H \\leq G$, constructs the homomorphism $N_G(H) \\to \\Aut_G(H)$",
     [IsGroup, IsGroup],
     function(G, H)
-        local NGH, Aut;
+        local NGH, CGH, Aut;
         
         if not IsSubset(G, H) then 
             Error("H is not a subset of G");
         fi;
 
         NGH := Normalizer(G, H);
+        CGH := Centralizer(G, H);
+        
         Aut := Automizer(G, H);
 
-        return GroupHomomorphismByFunction(NGH, Aut, g -> ConjugationHomomorphism(H, H, g));
+        return GroupHomomorphismByFunction(NGH, Aut, 
+            g -> ConjugatorAutomorphismNC(H, g));
+            # , false, psi -> First(RightTransversal(NGH, CGH), g -> ConjugatorAutomorphismNC(H, g) = psi));
     end );
 
 InstallMethod(IsRestrictedHomomorphism,
@@ -143,8 +152,8 @@ InstallGlobalFunction(UnionEnumerator, function(printFn, colls, fam...)
         LenFn := Size;
     fi;
 
-    if ForAll(colls, coll -> IsListOrCollection(colls) and FamilyObj(colls) = fam) then 
-        Error("Not all collections or collections of different type provided");
+    if not IsEmpty(colls) and ForAll(colls, coll -> IsListOrCollection(colls) and FamilyObj(colls) = fam) then 
+        Error(String(colls));
     fi;
 
     return EnumeratorByFunctions(CollectionsFamily(fam),
