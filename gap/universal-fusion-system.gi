@@ -3,7 +3,7 @@ InstallMethod(UniversalFusionSystem,
     [IsGroup, IsScalar],
     function (P, p)
         return Objectify(NewType(FusionSystemFamily, IsUniversalFusionSystemRep),
-            rec( P := P, Subs := PartitionedConjugacyClasses(P), p := p ));
+            rec( P := P, Subs := GroupByIsomType(List(ConjugacyClassesSubgroups(P), Representative)), p := p ));
     end );
 
 InstallMethod(UnderlyingGroup,
@@ -88,9 +88,3 @@ InstallMethod(FClassesReps,
         return reps;
     end );
 
-InstallMethod(IsFReceptive,
-    "Checks whether $Q$ is $F$-receptive",
-    [IsUniversalFusionSystemRep, IsGroup],
-    function (F, Q)
-        return true;
-    end );
