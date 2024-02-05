@@ -1,6 +1,6 @@
 InstallMethod(GeneratedFusionSystem,
     "Constructs a generated fusion system",
-    [IsGroup, IsScalar, IsCollection],
+    [IsGroup, IsScalar, IsListOrCollection],
     function(P, p, maps)
         return GeneratedFusionSystem(RealizedFusionSystem(P, P, p), maps);
     end );
@@ -95,7 +95,7 @@ end;
 
 InstallMethod(GeneratedFusionSystem,
     "Constructs a generated fusion system on some fusion system",
-    [IsFusionSystem, IsCollection],
+    [IsFusionSystem, IsListOrCollection],
     function(F, maps)
         local FReps, NewFReps, NewFClassesReps, NewFIsoms, NewFAuts, label, reps, visited, repIsoms, newReps, classesReps, classReps, i, A, phi, B, C, Q;
 

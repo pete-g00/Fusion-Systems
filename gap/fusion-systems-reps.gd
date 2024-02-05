@@ -16,9 +16,9 @@ DeclareRepresentation("IsUniversalFusionSystemRep",
 
 DeclareOperation("UniversalFusionSystem", [IsGroup, IsScalar]);
 
-DeclareOperation("GeneratedFusionSystem", [IsFusionSystem, IsCollection]);
+DeclareOperation("GeneratedFusionSystem", [IsFusionSystem, IsListOrCollection]);
 
-DeclareOperation("GeneratedFusionSystem", [IsGroup, IsScalar, IsCollection]);
+DeclareOperation("GeneratedFusionSystem", [IsGroup, IsScalar, IsListOrCollection]);
 
 DeclareRepresentation("IsGeneratedFusionSystemRep", 
     IsComponentObjectRep and IsFusionSystem, ["F", "Reps", "Isoms", "ClassReps", "NewFAuts"]);
