@@ -19,15 +19,55 @@ InstallMethod(Automizer,
     "Constructs the automizer \\Aut_G(H) for $G \\leq H$",
     [IsGroup, IsGroup],
     function(G, H)
-        local NGH, CGH, phi, AutGens, AutG;
+        local NGH, CGH, phi, Gens, AutGens, AutG;
+
+        if IsGroupOfAutomorphisms(G) then 
+            return Automizer(G, H);
+        fi;
         
         NGH := Normalizer(G, H);
         CGH := Centralizer(G, H);
 
         phi := NaturalHomomorphismByNormalSubgroupNC(NGH, CGH);
 
-        AutGens := List(GeneratorsOfGroup(Image(phi)), 
+        Gens := GeneratorsOfGroup(Image(phi));
+
+        if IsEmpty(Gens) then 
+            return Group(IdentityMapping(H));
+        fi;
+
+        AutGens := List(Gens, 
             psi -> ConjugatorAutomorphismNC(H, PreImagesRepresentative(phi, psi)));
+        
+        AutG := Group(AutGens);
+        SetIsAutomorphismGroup(AutG, true);
+
+        return AutG;
+    end );
+
+OnImage := function(x, phi)
+    return Image(phi, x);
+end;
+
+InstallMethod(Automizer,
+    "Constructs the group of automorphisms induced on G by the group of automorphisms on some overgroup",
+    [IsGroupOfAutomorphisms, IsGroup],
+    function(Auts, H)
+        local NGH, CGH, phi, Gens, AutGens, AutG;
+
+        NGH := Stabilizer(Auts, H, OnImage);
+        CGH := Kernel(ActionHomomorphism(NGH, H, OnImage));
+
+        phi := NaturalHomomorphismByNormalSubgroup(NGH, CGH);
+
+        Gens := GeneratorsOfGroup(Image(phi));
+
+        if IsEmpty(Gens) then 
+            return Group(IdentityMapping(H));
+        fi;
+        
+        AutGens := List(Gens, 
+            psi -> GroupHomomorphismByFunction(H, H, x -> OnImage(x, PreImagesRepresentative(phi, psi))));
         
         AutG := Group(AutGens);
         SetIsAutomorphismGroup(AutG, true);
@@ -51,8 +91,8 @@ InstallMethod(AutomizerHomomorphism,
         Aut := Automizer(G, H);
 
         return GroupHomomorphismByFunction(NGH, Aut, 
-            g -> ConjugatorAutomorphismNC(H, g));
-            # , false, psi -> First(RightTransversal(NGH, CGH), g -> ConjugatorAutomorphismNC(H, g) = psi));
+            g -> ConjugatorAutomorphismNC(H, g), 
+            false, psi -> First(RightTransversal(NGH, CGH), g -> ConjugatorAutomorphismNC(H, g) = psi));
     end );
 
 InstallMethod(IsRestrictedHomomorphism,
@@ -196,10 +236,6 @@ InstallGlobalFunction(UnionEnumerator, function(printFn, colls, fam...)
         )
     );
 end );
-
-# OnImage := function(x, phi)
-#     return Image(phi, x);
-# end;
 
 # OnGroupImage := function(P, phi) 
 #     return Image(phi, P);
