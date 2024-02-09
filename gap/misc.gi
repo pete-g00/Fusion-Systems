@@ -1,9 +1,24 @@
-InstallMethod(IsSylowPSubgroup,
-    "Checks whether $P$ is a Sylow $p$-subgroup of $G$",
-    [IsGroup and IsFinite, IsGroup and IsFinite, IsInt],
-    function(P, G, p)
-        return PValuation(Size(P), p) = PValuation(Size(G), p);
-    end );
+# InstallMethod(FindPrimeOfPrimePower, 
+#     "Given a prime power $q$, returns the prime $p$ whose power it is",
+#     [IsScalar],
+#     function(q)
+#         local p;
+
+#         p := SmallestRootInt(q);
+
+#         if IsPrime(p) then 
+#             return p;
+#         else 
+#             return fail;
+#         fi;
+#     end );
+
+# InstallMethod(IsSylowPSubgroup,
+#     "Checks whether $P$ is a Sylow $p$-subgroup of $G$",
+#     [IsGroup and IsFinite, IsGroup and IsFinite, IsInt],
+#     function(P, G, p)
+#         return PValuation(Size(P), p) = PValuation(Size(G), p);
+#     end );
 
 InstallMethod(ConjugationHomomorphism,
     "For $Q \\leq P$ and $g \\in N_P(Q)$, returns the automorphism map induced by $g$",
@@ -122,28 +137,27 @@ InstallMethod(IsRestrictedHomomorphism,
         return true;
     end );
 
+# InstallMethod(NormalizesSubgroup,
+#     "Checks whether the homomorphism fixes the subgroup",
+#     [IsGroupHomomorphism, IsGroup],
+#     function(phi, H)
+#         local G;
+#         G := Source(Representative(H));
+#         Assert(0, IsSubset(G, H));
 
-InstallMethod(NormalizesSubgroup,
-    "Checks whether the homomorphism fixes the subgroup",
-    [IsGroupHomomorphism, IsGroup],
-    function(phi, H)
-        local G;
-        G := Source(Representative(H));
-        Assert(0, IsSubset(G, H));
+#         return Image(phi, G) = G;
+#     end );
 
-        return Image(phi, G) = G;
-    end );
+# InstallMethod(CentralizesSubgroup,
+#     "Checks whether the homomorphism acts trivially on the given subgroup",
+#     [IsGroupHomomorphism, IsGroup],
+#     function(phi, H)
+#         local G;
+#         G := Source(phi);
+#         Assert(0, IsSubset(G, H));
 
-InstallMethod(CentralizesSubgroup,
-    "Checks whether the homomorphism acts trivially on the given subgroup",
-    [IsGroupHomomorphism, IsGroup],
-    function(phi, H)
-        local G;
-        G := Source(phi);
-        Assert(0, IsSubset(G, H));
-
-        return IsRestrictedHomomorphism(phi, IdentityMapping(H));
-    end );
+#         return IsRestrictedHomomorphism(phi, IdentityMapping(H));
+#     end );
 
 InstallMethod(FindHomExtension,
     "Tries to find an extension of the group homomorphism in the given collection",
@@ -152,26 +166,41 @@ InstallMethod(FindHomExtension,
         return First(L, psi -> IsRestrictedHomomorphism(phi, psi));
     end );
 
-InstallMethod(FindNormalizingHomExtension,
-    "Tries to find an extension of the group homomorphism in the given collection that fixes the subgroup",
-    [IsGroupHomomorphism, IsCollection, IsGroup],
-    function(phi, L, H)
-        local G;
-        G := Source(phi);
-        Assert(0, IsSubset(G, H));
+# InstallMethod(FindNormalizingHomExtension,
+#     "Tries to find an extension of the group homomorphism in the given collection that fixes the subgroup",
+#     [IsGroupHomomorphism, IsCollection, IsGroup],
+#     function(phi, L, H)
+#         local G;
+#         G := Source(phi);
+#         Assert(0, IsSubset(G, H));
 
-        return First(L, psi -> NormalizesSubgroup(psi, H) and IsRestrictedHomomorphism(phi, psi));
-    end );
+#         return First(L, psi -> NormalizesSubgroup(psi, H) and IsRestrictedHomomorphism(phi, psi));
+#     end );
 
-InstallMethod(FindCentralizingHomExtension,
-    "Tries to find an extension of the group homomorphism in the given collection that acts trivially on the subgroup",
-    [IsGroupHomomorphism, IsCollection, IsGroup],
-    function(phi, L, H)
-        local G;
-        G := Source(phi);
-        Assert(0, IsSubset(G, H));
+# InstallMethod(FindCentralizingHomExtension,
+#     "Tries to find an extension of the group homomorphism in the given collection that acts trivially on the subgroup",
+#     [IsGroupHomomorphism, IsCollection, IsGroup],
+#     function(phi, L, H)
+#         local G;
+#         G := Source(phi);
+#         Assert(0, IsSubset(G, H));
 
-        return First(L, psi -> CentralizesSubgroup(psi, H) and IsRestrictedHomomorphism(phi, psi));
+#         return First(L, psi -> CentralizesSubgroup(psi, H) and IsRestrictedHomomorphism(phi, psi));
+#     end );
+
+InstallMethod(IsStronglyPEmbedded,
+    "Checks whether M is strongly p-embedded in G",
+    [IsGroup, IsGroup, IsScalar],
+    function(G, M, p)
+        local NGM;
+
+        if PValuation(Size(G), p) <> PValuation(Size(M), p) then 
+            return false;
+        fi;
+
+        NGM := Normalizer(G, M);
+
+        return ForAll(RightTransversal(G, NGM), g -> g in M or PValuation(Size(Intersection(M, M^g)), p) = 0);
     end );
 
 InstallGlobalFunction(UnionEnumerator, function(printFn, colls, fam...)

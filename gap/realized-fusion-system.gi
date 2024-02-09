@@ -71,7 +71,7 @@ InstallMethod(RepresentativeFIsomorphism,
             return fail;
         fi;
 
-        return ConjugationHomomorphism(A, B, g);
+        return ConjugatorIsomorphism(A, g);
     end );
 
 InstallMethod(FClassReps,
@@ -170,13 +170,13 @@ InstallMethod(IsFReceptive,
         return IsFullyCentralized(F, Q);
     end );
 
-InstallMethod(IsSaturated,
-    "Checks whether $F$ is a saturated fusion system",
-    [IsRealizedFusionSystemRep],
-    function(F)
-        if F!.IsSylowSubgroup then 
-            return true;
-        else
-            TryNextMethod();
-        fi;
-    end );
+# InstallMethod(IsSaturated,
+#     "Checks whether $F$ is a saturated fusion system",
+#     [IsRealizedFusionSystemRep],
+#     function(F)
+#         if F!.IsSylowSubgroup then 
+#             return true;
+#         else
+#             TryNextMethod();
+#         fi;
+#     end );

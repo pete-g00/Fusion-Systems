@@ -74,12 +74,12 @@ InstallMethod(\=,
         
         P := UnderlyingGroup(F1);
 
-        return ForAll(repsA, Q -> ForAny(repsB, R -> Q^P = R^P));
+        return ForAll(repsA, Q -> ForAny(repsB, R -> R in Q^P));
     end );
 
 InstallMethod(\in,
     "Checks whether an IsFClass contains a subgroup",
-    [IsFClass, IsGroup],
+    [IsGroup, IsFClass],
     function(clA, B)
         return AreFConjugate(UnderlyingFusionSystem(clA), Representative(clA), B);
     end );
