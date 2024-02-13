@@ -35,7 +35,7 @@ InstallMethod(\=,
             return false;
         fi;
 
-        if not CouldBeIsomorphic(Representative(clA), Representative(clB)) then 
+        if CompareByIsom(Representative(clA), Representative(clB)) <> 0 then 
             return false;
         fi;
 
@@ -80,7 +80,7 @@ InstallMethod(\=,
 InstallMethod(\in,
     "Checks whether an IsFClass contains a subgroup",
     [IsGroup, IsFClass],
-    function(clA, B)
+    function(B, clA)
         return AreFConjugate(UnderlyingFusionSystem(clA), Representative(clA), B);
     end );
 
