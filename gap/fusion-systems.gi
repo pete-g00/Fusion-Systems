@@ -1,28 +1,72 @@
-CouldBeIsomorphic := function(A, B)
-    if Size(A) <> Size(B) then 
-        return false;
+# Produces a list of numbers using which the isomorphism type 
+# of the group G can be almost completely inferred.
+# If G is small enough to support IdGroup, then we only rely on that (i.e. [size of G, isom id of G])
+# 
+# Otherwise, we make use of the following values:
+# - Size of G
+# - Size of the center of G
+# - Size of the derived subgroup of G
+# - Length of a composition series of G
+# - Exponent of G
+# - Length of the maximal subgroups of G (up to conjugacy classes)
+# - (for p-groups) Rank of G
+IsomType := function(G)
+    if IdGroupsAvailable(Size(G)) then 
+        return IdGroup(G);
     fi;
-    if IdGroupsAvailable(Size(A)) then 
-        return IdGroup(A)[2] = IdGroup(B)[2];
+
+    if IsPrimePowerInt(Size(G)) then 
+        return [
+            Size(G),
+            Size(Center(G)),
+            Size(DerivedSubgroup(G)),
+            Length(CompositionSeries(G)),
+            Exponent(G),
+            Length(MaximalSubgroupClassReps(G)),
+            Rank(G)
+        ];
     else 
-        return true;
+        return [
+            Size(G),
+            Size(Center(G)),
+            Size(DerivedSubgroup(G)),
+            Length(CompositionSeries(G)),
+            Exponent(G),
+            Length(MaximalSubgroupClassReps(G))
+        ];
     fi;
 end;
 
+# Returns a number that compares the isomorphism type of A with the isomorphism type of B
+# Essentially, this is IsomType(A) - IsomType(B)
+# So, if the value is 0, then the two groups have the same IsomType value
+# If the value is -ve then A and B don't have the same IsomType value, and the first value that is different is where A has a smaller number than B
+# The opposite is the case when the value is +ve
+CompareByIsom := function(A, B)
+    local IsomTypeA, IsomTypeB, i, sub;
+
+    IsomTypeA := IsomType(A);
+    IsomTypeB := IsomType(B);
+
+    for i in [1..Length(IsomTypeA)] do 
+        sub := IsomTypeA[i] - IsomTypeB[i];
+        if sub <> 0 then 
+            return sub;
+        fi;
+    od;
+
+    return 0;
+end;
+
+# Groups a list of subgroups by IsomType
+# Returns a record labelled by the isomtypes (a stringified version of the list)
+# and entries the subgroups given that belong to the isomtype
 GroupByIsomType := function(L)
     local Subs, i, C, Q, Cons, R, label;
 
     L := ShallowCopy(L);
     Sort(L, function(A, B)
-        if Size(A) <> Size(B) then 
-            return Size(A) <= Size(B);
-        fi;
-
-        if IdGroupsAvailable(Size(A)) then 
-            return IdGroup(A)[2] <= IdGroup(B)[2];
-        fi;
-
-        return true;
+        return CompareByIsom(A, B) <= 0;
     end );
     
     Subs := rec();
@@ -31,21 +75,15 @@ GroupByIsomType := function(L)
     while i <= Length(L) do
         Q := L[i];
         Cons := [Q];
-        
-        while i+1 <= Length(L) and CouldBeIsomorphic(Q, L[i+1]) do 
+            
+        while i+1 <= Length(L) and CompareByIsom(Q, L[i+1]) = 0 do 
             i := i+1;
             R := L[i];
             Add(Cons, R);
         od; 
 
         i := i+1;
-
-        if IdGroupsAvailable(Size(Q)) then 
-            label := String(IdGroup(Q));
-        else 
-            label := Size(Q);
-        fi;
-
+        label := String(IsomType(Q));
         Subs.(label) := Cons;
     od;
     
@@ -79,7 +117,7 @@ InstallMethod(FClassesReps,
         C := GroupByIsomType(List(ConjugacyClassesSubgroups(P), Representative));
         Reps := [];
 
-        # C is a record, where the label gives us the size/group id, and 
+        # C is a record, where the label gives us the an idea of the isom type, and 
         # the elements are a representative from each conjugacy class for each
         # of the subgroups
         for name in RecNames(C) do 
@@ -215,7 +253,7 @@ InstallMethod(\in,
         A := Source(phi);
         B := Range(phi);
         
-        if not (IsSubset(A, UnderlyingGroup(F)) or IsSubset(B, UnderlyingGroup(F))) then 
+        if not (IsSubset(UnderlyingGroup(F), A) or IsSubset(UnderlyingGroup(F), B)) then 
             return false;
         fi;
 
@@ -282,7 +320,7 @@ InstallMethod(NPhi,
     "Given a fusion system $F$ on $P$ and a map $\\phi$ in $F$, computes $N_\\phi$",
     [IsFusionSystem, IsGroupHomomorphism],
     function(F, phi)
-        local P, Q, R, CPQ, NPQ, AutGR, NPhiGens, QCPQ, g;
+        local P, Q, R, CPQ, NPQ, AutPR, NPhiGens, QCPQ, g, N;
 
         P := UnderlyingGroup(F);
         Q := Source(phi);
@@ -290,13 +328,13 @@ InstallMethod(NPhi,
 
         CPQ := Centralizer(P, Q);
         NPQ := Normalizer(P, Q);
-        AutGR := Automizer(P, R);
+        AutPR := Automizer(P, R);
 
         NPhiGens := Union(GeneratorsOfGroup(Q), GeneratorsOfGroup(CPQ));
         QCPQ := Group(NPhiGens);
 
         for g in RightTransversal(NPQ, QCPQ) do 
-            if not g in Group(NPhiGens) and ConjugatorAutomorphismNC(P, g)^phi in AutGR then 
+            if not g in Group(NPhiGens) and ConjugatorAutomorphismNC(P, g)^phi in AutPR then 
                 Add(NPhiGens, g);
 
                 if Group(NPhiGens) = NPQ then 
@@ -305,7 +343,13 @@ InstallMethod(NPhi,
             fi;
         od;
 
-        return Group(NPhiGens);
+        N := Group(NPhiGens);
+
+        if not IsNormal(NPQ, N) then 
+            Print("The map\n", phi, "\nwith N_\\phi: ", N, " is not normal in the normalizer: ", NPQ, "\n");
+        fi;
+
+        return N;
     end );
 
 InstallMethod(ExtendMapToNPhi,
@@ -323,6 +367,20 @@ InstallMethod(IsFReceptive,
     "Checks whether $Q$ is $F$-receptive",
     [IsFusionSystem, IsGroup],
     function (F, Q)
+        local AutPQ, AutFQ, OutFQ;
+        
+        AutPQ := Automizer(UnderlyingGroup(F), Q);
+        AutFQ := AutF(F, Q);
+
+        # OutFQ := RightTransversal(AutFQ, AutPQ);
+
+        # return ForAll(FClassReps(F, Q), function(R)
+        #     local psi;
+
+        #     psi := RepresentativeFIsomorphism(F, Q, R);
+        #     return ForAll(OutFQ, phi -> ExtendMapToNPhi(F, phi * psi) <> fail);
+        # end );
+
         return ForAll(FClassReps(F, Q), 
             R -> ForAll(IsomF(F, R, Q), phi -> ExtendMapToNPhi(F, phi) <> fail));
     end );
@@ -331,7 +389,9 @@ InstallMethod(IsSaturated,
     "Checks whether the fusion system is saturated",
     [IsFusionSystem],
     function(F)
-        return ForAll(FClassesReps(F), Q -> 
+        # return  IsFullyAutomized(F, UnderlyingGroup(F)) and
+        #         ForAll(FClassesReps(F), Q -> ForAll(FClassReps(F, Q), R -> not IsFullyNormalized(F, R) or IsFReceptive(F, R)))
+        return ForAll(Reversed(FClassesReps(F)), Q -> 
             ForAny(FClassReps(F, Q), R -> IsFullyAutomized(F, R) and IsFReceptive(F, R))
         );
     end );
@@ -341,17 +401,43 @@ InstallMethod(IsFCentric,
     [IsFusionSystem, IsGroup],
     function(F, Q)
         return ForAll(FClassReps(F, Q), 
-            R -> IsSubset(R, Normalizer(UnderlyingGroup(F), R)));
+            R -> IsSubset(R, Centralizer(UnderlyingGroup(F), R)));
     end );
 
 InstallMethod(IsFRadical,
     "Checks whether $Q$ is $F$-radical",
     [IsFusionSystem, IsGroup],
     function(F, Q)
-        return PCore(Q, Prime(F)) = InnerAutomorphismGroup(Q);
+        if IsAbelian(Q) then 
+            return IsTrivial(PCore(AutF(F, Q), Prime(F)));
+        else 
+            return PCore(AutF(F, Q), Prime(F)) = InnerAutomorphismGroup(Q);
+        fi;
     end );
 
-# TODO: `IsEssentialSubgroup(P, A)` that takes a p-group `P` and a subgroup `A`, and checks whether `A` is an essential subgroup.
+InstallMethod(IsFEssential, 
+    "Checks whether a subgroup is F-essential",
+    [IsFusionSystem, IsGroup],
+    function(F, Q)
+        local InnQ, AutFQ, OutFQ;
+
+        if not IsFCentric(F, Q) then 
+            return false;
+        fi;
+
+        if IsAbelian(Q) then 
+            InnQ := Group(IdentityMapping(Q));
+        else 
+            InnQ := InnerAutomorphismGroup(Q);
+        fi;
+
+        AutFQ := AutF(F, Q);
+        OutFQ := AutFQ/InnQ;
+
+        return ForAny(ConjugacyClassesSubgroups(OutFQ), 
+            C -> not Representative(C) = OutFQ and
+                IsStronglyPEmbedded(OutFQ, Representative(C), Prime(F)));
+    end );
 
 InstallMethod(\=,
     "Checks whether two fusion systems are equal",
@@ -393,6 +479,7 @@ InstallMethod(IsomorphismFusionSystems,
             return fail;
         fi;
 
+        # TODO: The speed of this operation depends on the underlying group (choose P1 or P2 depending on which one will be more efficient)
         Auts := AutomorphismGroup(P1);
         # any map in automorphism of P1 (as a fusion system) won't yield us anything, so we can transverse it?
 

@@ -1,29 +1,15 @@
-#############################################################################
-##
-##
-#W  fusion-systems.gd         Fusion Systems                      Pete Gautam
-##
-##  Declaration file for general functions of the fusion systems package.
-##
-#Y  Copyright (C) 2024      University of Birmingham, 
-#Y                          Birmingham, England
-##
-#############################################################################
-
-
 #! @Chapter Miscallenous functions
 #! In this section, we define some functionalities about groups and group homomorphisms that are used in the main fusion systems package. It is hoped that these operations will be of use in general.
 
 #! @Section Operations
 
-# Checks whether $P$ is a Sylow $p$-subgroup of $G$
-# TODO: Remove- this isn't necessary
-DeclareOperation("IsSylowPSubgroup", [IsGroup, IsGroup, IsInt]);
-
-# TODO: Figure out how to implement this most efficiently!
 # Given subgroups $A$ and $B$ of some group $G$, and a $g \in G$ such that 
 # $A^g \leq B$, defines the homomorphism $A \to B$ by $a \mapsto a^g$
 DeclareOperation("ConjugationHomomorphism", [IsGroup, IsGroup, IsObject]);
+
+#! @Description
+#! Given a prime power $q = p^n$, returns the prime $p$
+DeclareOperation("FindPrimeOfPrimePower", [IsScalar]);
 
 #! @BeginGroup Automizers
 #! @Arguments G H

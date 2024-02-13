@@ -1,27 +1,3 @@
-#############################################################################
-##
-##
-#W  fusion-systems.gd         Fusion Systems                      Pete Gautam
-##
-##  Declaration file for general functions of the fusion systems package.
-##
-#Y  Copyright (C) 2024      University of Birmingham, 
-#Y                          Birmingham, England
-##
-#############################################################################
-
-
-# General declarations of fusion systems
-# In this file, we declare the fusion system category along with the attributes/operations it has.
-# This is an abstract representation of a fusion system- we expect every representation to have these functionalities,
-# but they might have different implementatinos to make it optimal with respect to what we know about the given fusion system.
-
-# There are 2 kinds of attibutes/operations here- the first few must be implemented by every representation to make the fusion system work. 
-# This is the minimal set of attributes/operations a fusion system needs in order for us to define all the other operations. 
-# It is however possible that there are more efficient ways of computing the other operations/attibutes, and so these functionalities can also be overridden in a specific representation.
-
-# TODO: Infer the prime instead of getting it from the user
-
 #! @Chapter Operations on Fusion Systems 
 
 DeclareCategory("IsFusionSystem", IsObject);
@@ -38,6 +14,7 @@ BindGlobal( "FusionSystemFamily", NewFamily("FusionSystemFamily") );
 #! The implementation of most of these core attributes is dictated by the representation we choose. This means that it may be more efficient to interact with a fusion system depending on its representation.
 
 # TODO: Describe what would be a good way to represent fusion systems
+# TODO: Examples of using it INSTEAD of implementation details
 
 #! @Description
 #! Given a fusion system $\calF$ on a finite $p$-group $P$, returns the group $P$.
@@ -207,7 +184,6 @@ DeclareOperation("IsFCentric", [IsFusionSystem, IsGroup]);
 #! @Returns `true` or `false`
 DeclareOperation("IsFRadical", [IsFusionSystem, IsGroup]);
 
-# TODO: Move the IsFEssential code
 #! @Description
 #! Given a fusion system $\calF$ on a finite $p$-group $P$ and a subgroup $A \leq P$, checks whether $A$ is essential in $\calF$. 
 #! 

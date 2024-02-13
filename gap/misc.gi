@@ -1,24 +1,17 @@
-# InstallMethod(FindPrimeOfPrimePower, 
-#     "Given a prime power $q$, returns the prime $p$ whose power it is",
-#     [IsScalar],
-#     function(q)
-#         local p;
+InstallMethod(FindPrimeOfPrimePower, 
+    "Given a prime power $q$, returns the prime $p$ whose power it is",
+    [IsScalar],
+    function(q)
+        local p;
 
-#         p := SmallestRootInt(q);
+        p := SmallestRootInt(q);
 
-#         if IsPrime(p) then 
-#             return p;
-#         else 
-#             return fail;
-#         fi;
-#     end );
-
-# InstallMethod(IsSylowPSubgroup,
-#     "Checks whether $P$ is a Sylow $p$-subgroup of $G$",
-#     [IsGroup and IsFinite, IsGroup and IsFinite, IsInt],
-#     function(P, G, p)
-#         return PValuation(Size(P), p) = PValuation(Size(G), p);
-#     end );
+        if IsPrime(p) then 
+            return p;
+        else 
+            return fail;
+        fi;
+    end );
 
 InstallMethod(ConjugationHomomorphism,
     "For $Q \\leq P$ and $g \\in N_P(Q)$, returns the automorphism map induced by $g$",
@@ -38,6 +31,10 @@ InstallMethod(Automizer,
 
         if IsGroupOfAutomorphisms(G) then 
             return Automizer(G, H);
+        fi;
+
+        if not IsSubset(G, H) then 
+            Error("H is not a subset of G");
         fi;
         
         NGH := Normalizer(G, H);
@@ -68,7 +65,12 @@ InstallMethod(Automizer,
     "Constructs the group of automorphisms induced on G by the group of automorphisms on some overgroup",
     [IsGroupOfAutomorphisms, IsGroup],
     function(Auts, H)
-        local NGH, CGH, phi, Gens, AutGens, AutG;
+        local G, NGH, CGH, phi, Gens, AutGens, AutG;
+
+        G := Source(Representative(Auts));
+        if not IsSubset(G, H) then 
+            Error("The automorphisms do not restrict to H");
+        fi;
 
         NGH := Stabilizer(Auts, H, OnImage);
         CGH := Kernel(ActionHomomorphism(NGH, H, OnImage));
@@ -200,6 +202,7 @@ InstallMethod(IsStronglyPEmbedded,
 
         NGM := Normalizer(G, M);
 
+        # Transversing NGM to avoid duplicate M^g tests
         return ForAll(RightTransversal(G, NGM), g -> g in M or PValuation(Size(Intersection(M, M^g)), p) = 0);
     end );
 
@@ -265,80 +268,3 @@ InstallGlobalFunction(UnionEnumerator, function(printFn, colls, fam...)
         )
     );
 end );
-
-# OnGroupImage := function(P, phi) 
-#     return Image(phi, P);
-# end;
-
-# Given:
-# - an isomorphism \phi \colon P \to Q;
-# - subgroups P \leq A and Q \leq B
-# - an isomorphism \Phi \colon A \to B;
-# - a subgroup H \leq \Aut(A),
-# finds a map \psi \colon A \to B that extends \phi, with \psi \in H*\phi.
-# InstallMethod(FindHomExtension, 
-#     "Given a map $\\phi \\colon P \\to Q$ and a subgroup $H \\leq \\Aut(P)$, with $B \\leq P$ and an isomorphism $\\Phi \\colon P \\to Q$, with tries to find an extension in $H$ of the map $\\phi$", 
-#     [IsGroupHomomorphism, IsAutomorphismGroup, IsGroupHomomorphism],
-#     function(phi, H, psi)
-#         local P, Q, A, B, InvPsi, QPrime, alpha, PNormalizer, PCentralizer, mu, beta;
-
-#         P := Source(phi);
-#         Q := Image(phi);
-
-#         A := Source(psi);
-#         B := Source(psi);
-        
-#         Assert(0, IsSubset(A, P));
-#         Assert(0, IsSubset(B, Q));
-#         Assert(0, Identity(H) = IdentityMapping(A));
-        
-#         InvPsi := InverseGeneralMapping(psi);
-#         QPrime := Image(InvPsi, Q);
-
-#         alpha := RepresentativeAction(H, P, QPrime, OnGroupImage);
-
-#         if alpha = fail then 
-#             return fail;
-#         fi;
-
-#         # Find the automorphisms in A that stabilize P
-#         # Then find the kernel of the action (i.e. those that restrict to the identity in P), and go through each representative
-#         PNormalizer := Stabilizer(H, P, OnGroupImage);
-#         PCentralizer := Kernel(ActionHomomorphism(PNormalizer, P));
-
-#         # Transverse the cosets and find a map that extends phi
-#         for mu in RightTransversal(PNormalizer, PCentralizer) do 
-#             # mu : A -> A (a map modulo the action on P)
-#             # alpha : A -> A (that maps P -> Q')
-#             # psi : A -> B (that maps Q' -> Q)
-#             beta := mu*alpha*psi;
-#             if IsRestrictedHomomorphism(beta, phi) then 
-#                 return beta;
-#             fi;
-#         od;
-
-#         return fail;
-#     end );
-
-# InstallMethod(FindNormalizingAutExtension, 
-#     "Given a map $\\phi \\colon A \\to B$, $Q \\leq A$ and a subgroup $H \\leq \\Aut(P)$, with $B \\leq P$, tries to find an extension in $H$ of the map $\\phi$", 
-#     [IsGroupHomomorphism, IsAutomorphismGroup, IsGroup],
-#     function(phi, A, Q)
-#         local P, PNormalizer, PCentralizer, psi;
-
-#         P := Source(phi);
-
-#         # Find the automorphisms in A that stabilize P
-#         # Then find the kernel of the action (i.e. those that restrict to the identity in P), and go through each representative
-#         PNormalizer := Stabilizer(A, P, OnGroupImage);
-#         PCentralizer := Kernel(ActionHomomorphism(PNormalizer, P));
-
-#         # Transverse the cosets and find a map that extends phi
-#         for psi in RightTransversal(PNormalizer, PCentralizer) do 
-#             if IsRestrictedHomomorphism(phi, psi) then 
-#                 return psi;
-#             fi;
-#         od;
-
-#         return fail;
-#     end );
