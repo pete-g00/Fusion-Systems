@@ -1,23 +1,28 @@
 InstallMethod(RealizedFusionSystem, 
     "Constructs a realized fusion system F_P(G)",
-    [IsGroup, IsGroup, IsScalar],
-    function (G, P, p)
-        local i, SizeP;
+    [IsGroup, IsGroup],
+    function (G, P)
+        local p, IsSylowSubgroup;
 
-        if not (IsSubset(G, P)) then 
-            Error("P must be a subgroup of G");
-        elif not IsPrime(p) then
-            Error("p is not a prime");
-        fi;
+        p := FindPrimeOfPrimePower(Size(P));
 
-        SizeP := Size(P);
-        i := PValuation(SizeP, p);
-        if p^i <> SizeP then 
+        if p = fail then 
             Error("P is not a p-subgroup");
         fi;
 
+        if not (IsSubset(G, P)) then 
+            Error("P must be a subgroup of G");
+        fi;
+
+        IsSylowSubgroup := PValuation(Size(G), p) = PValuation(Size(P), p);
+
         return Objectify(NewType(FusionSystemFamily, IsRealizedFusionSystemRep), 
-            rec(G := G, P := P, p := p, IsSylowSubgroup := i = PValuation(Size(G), p)));
+            rec(
+                G := G, 
+                P := P, 
+                p := p, 
+                IsSylowSubgroup := IsSylowSubgroup
+            ));
     end );
 
 InstallMethod(UnderlyingGroup,

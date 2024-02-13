@@ -1,7 +1,10 @@
 InstallMethod(UniversalFusionSystem,
     "Constructs the universal fusion system on $P$",
-    [IsGroup, IsScalar],
-    function (P, p)
+    [IsGroup],
+    function (P)
+        local p;
+
+        p := FindPrimeOfPrimePower(Size(P));
         return Objectify(NewType(FusionSystemFamily, IsUniversalFusionSystemRep),
             rec( P := P, Subs := GroupByIsomType(List(ConjugacyClassesSubgroups(P), Representative)), p := p ));
     end );
