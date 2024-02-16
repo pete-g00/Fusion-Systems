@@ -81,7 +81,6 @@ InstallMethod(RepresentativeFIsomorphism,
             return fail;
         fi;
 
-        
         phiInv := GroupHomomorphismByFunction(A, ImageA, x -> Image(F!.phiInv, x));
         phi := GroupHomomorphismByFunction(ImageB, B, x -> Image(F!.phi, x));
 
@@ -108,68 +107,3 @@ InstallMethod(FClassesReps,
     function (F) 
         return OnListApplication(FClassesReps(F!.E), F!.phi);
     end );
-
-# InstallMethod(NPhi,
-#     "Given a fusion system $F$ on $P$ and a map $\\phi$ in $F$, computes $N_\\phi$",
-#     [IsTransportFusionSystemRep, IsGroupHomomorphism],
-#     function(F, psi)
-#         return NPhi(F!.E, psi^(F!.phiInv))^(F!.phi);
-#     end );
-
-# InstallMethod(ExtendMapToNPhi,
-#     "Tries to extend the map $\\phi$ to $N_\\phi$",
-#     [IsFusionSystem, IsGroupHomomorphism],
-#     function(F, psi)
-#         return ExtendMapToNPhi(F!.E, psi^(F!.phiInv))^(F!.phi);
-#     end);
-
-# InstallMethod(IsFullyNormalized,
-#     "Checks whether $Q$ is fully $F$-normalized",
-#     [IsTransportFusionSystemRep, IsGroup],
-#     function(F, Q)
-#         if not (IsSubset(F!.P, Q)) then 
-#             Error("Q is not a subgroup!");
-#         fi;
-
-#         return IsFullyNormalized(F!.E, Image(F!.phiInv, Q));
-#     end );
-
-# InstallMethod(IsFullyCentralized,
-#     "Checks whether $Q$ is fully $F$-centralized",
-#     [IsTransportFusionSystemRep, IsGroup],
-#     function(F, Q)
-#         if not (IsSubset(F!.P, Q)) then 
-#             Error("Q is not a subgroup!");
-#         fi;
-
-#         return IsFullyCentralized(F!.E, Image(F!.phiInv, Q));
-#     end );
-
-# InstallMethod(IsFullyAutomized,
-#     "Checks whether $Q$ is fully $F$-automized",
-#     [IsTransportFusionSystemRep, IsGroup],
-#     function(F, Q)
-#         if not (IsSubset(F!.P, Q)) then 
-#             Error("Q is not a subgroup!");
-#         fi;
-
-#         return IsFullyAutomized(F!.E, Image(F!.phiInv, Q));
-#     end );
-
-# InstallMethod(IsFReceptive,
-#     "Checks whether $Q$ is $F$-receptive",
-#     [IsTransportFusionSystemRep, IsGroup],
-#     function(F, Q)
-#         if not (IsSubset(F!.P, Q)) then 
-#             Error("Q is not a subgroup!");
-#         fi;
-
-#         return IsFReceptive(F!.E, Image(F!.phiInv, Q));
-#     end );
-
-# InstallMethod(IsSaturated
-#     "Checks whether the fusion system is saturated",
-#     [IsTransportFusionSystemRep],
-#     function(F)
-#         return IsSaturated(F!.E);
-#     end );

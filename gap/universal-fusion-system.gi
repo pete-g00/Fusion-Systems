@@ -5,6 +5,11 @@ InstallMethod(UniversalFusionSystem,
         local p;
 
         p := FindPrimeOfPrimePower(Size(P));
+
+        if p = fail then 
+            Error("P is not a p-group!");
+        fi;
+        
         return Objectify(NewType(FusionSystemFamily, IsUniversalFusionSystemRep),
             rec( P := P, Subs := GroupByIsomType(List(ConjugacyClassesSubgroups(P), Representative)), p := p ));
     end );

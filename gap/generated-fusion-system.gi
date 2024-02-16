@@ -174,22 +174,14 @@ InstallMethod(Prime,
         return Prime(F!.F);
     end );
 
-GenerateGroupLabel := function(A)
-    if IdGroupsAvailable(Size(A)) then 
-        return String(IdGroup(A));
-    else 
-        return Size(A);
-    fi;
-end;
-
 InstallMethod(RepresentativeFIsomorphism,
     "Returns a representative $F$-isomorphism between $A \\to B$",
     [IsGeneratedFusionSystemRep, IsGroup, IsGroup],
     function(F, A, B)
         local labelA, labelB, data;
 
-        labelA := GenerateGroupLabel(A);
-        labelB := GenerateGroupLabel(B);
+        labelA := String(IsomType(A));
+        labelB := String(IsomType(B));
 
         if labelA <> labelB then 
             return fail;
@@ -218,7 +210,7 @@ InstallMethod(FClassReps,
     function(F, Q)
         local label, phi, R, NewReps;
         
-        label := GenerateGroupLabel(Q);
+        label := String(IsomType(Q));
         phi := First(F!.Isoms.(label), phi -> AreFConjugate(F, Source(phi), Q));
         Assert(0, phi <> fail);
 
@@ -235,8 +227,8 @@ InstallMethod(AutF,
     function(F, A)
         local label, psi, r, AutGens;
 
-        label := GenerateGroupLabel(A);
-
+        label := String(IsomType(A));
+        
         psi := First(F!.Isoms.(label), psi -> AreFConjugate(F, Source(psi), A));
         Assert(0, psi <> fail);
         r := RepresentativeFIsomorphism(F, Source(psi), A);
