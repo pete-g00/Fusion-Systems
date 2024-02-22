@@ -185,3 +185,16 @@ InstallMethod(IsSaturated,
             TryNextMethod();
         fi;
     end );
+
+InstallMethod(\=,
+    "Checks whether $F_1$ and $F_2$ are equal",
+    [IsRealizedFusionSystemRep, IsRealizedFusionSystemRep],
+    function(F1, F2)
+        if RealizingGroup(F1) = RealizingGroup(F2) and UnderlyingGroup(F1) = UnderlyingGroup(F2) then 
+            return true;
+        else 
+            TryNextMethod();
+        fi;
+    end );
+
+# TODO: Check for isomorphism by conjugation in G
