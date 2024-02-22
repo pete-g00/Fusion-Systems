@@ -83,33 +83,31 @@ gap> CompareByIsom(R, S);
 ## Defining Fusion Systems (needed for the upcoming sections)
 
 gap> P := DihedralGroup(8);;
-gap> AutP := AutomorphismGroup(P);;
-gap> L := Filtered(MaximalSubgroups(P), IsElementaryAbelian);;
-gap> Length(L);
-2
-gap> AutQ := AutomorphismGroup(L[1]);;
-gap> AutR := AutomorphismGroup(L[2]);;
-gap> phi1 := First(AutQ, phi -> Order(phi) = 3);;
-gap> phi2 := First(AutR, phi -> Order(phi) = 3);;
-gap> phi3 := First(AutP, phi -> Order(phi) = 4);;
+gap> r := First(P, x -> Order(x) = 4);;
+gap> f := First(P, x -> not x in Center(P) and Order(x) = 2);;
+gap> P = Group(r, f);
+true
+gap> Q := Group(r^2, f);;
+gap> R := Group(r^2, r*f);;
+gap> phi1 := GroupHomomorphismByImages(Q, [Q.1, Q.2], [Q.2, Q.1*Q.2]);;
+gap> phi2 := GroupHomomorphismByImages(R, [R.1, R.2], [R.2, R.1*R.2]);;
+gap> phi3 := GroupHomomorphismByImages(P, [r, f], [r, r*f]);;
 gap> phi1 <> fail;
 true
 gap> phi2 <> fail;
 true
 gap> phi3 <> fail;
 true
+gap> Order(phi1) = 3;
+true
+gap> Order(phi2) = 3;
+true
+gap> Order(phi3) = 4;
+true
 gap> F1 := GeneratedFusionSystem(P, []);;
 gap> F2 := GeneratedFusionSystem(P, [phi1]);;
-gap> F3 := GeneratedFusionSystem(P, [phi1, phi2]);;
+gap> F3 := GeneratedFusionSystem(F2, [phi2]);;
 gap> F4 := GeneratedFusionSystem(P, [phi3]);;
-gap> IsGeneratedFusionSystemRep(F1);
-true
-gap> IsGeneratedFusionSystemRep(F2);
-true
-gap> IsGeneratedFusionSystemRep(F3);
-true
-gap> IsGeneratedFusionSystemRep(F4);
-true
 
 #############################################################################
 ## FClass, FClassesReps, FClasses
@@ -154,7 +152,7 @@ gap> FC4 := FClasses(F4);;
 gap> Length(FC4);
 6
 gap> List(FC4, Size);
-[ 1, 1, 4, 1, 2, 1 ]
+[ 1, 1, 4, 2, 1, 1 ]
 gap> List(FC4, c -> Size(Representative(c)));
 [ 1, 2, 2, 4, 4, 8 ]
 gap> FCR4 := FClassesReps(F4);;
@@ -165,10 +163,102 @@ true
 
 #############################################################################
 ## ContainedFConjugates
+gap> A := Group(r^2);;
+gap> B := Group(f);;
+gap> ConsAB1 := ContainedFConjugates(F1, A, B);;
+gap> Length(ConsAB1);
+0
+gap> ConsAB2 := ContainedFConjugates(F2, A, B);;
+gap> Length(ConsAB2);
+1
+gap> ConsAB2[1] = B;
+true
+gap> ConsAB3 := ContainedFConjugates(F3, A, B);;
+gap> Length(ConsAB3);
+1
+gap> ConsAB3 = ConsAB2;
+true
+gap> ConsAB4 := ContainedFConjugates(F4, A, B);;
+gap> Length(ConsAB4);
+0
+gap> ConsAP4 := ContainedFConjugates(F4, A, P);;
+gap> Length(ConsAP4);
+1
+gap> ConsAP1 := ContainedFConjugates(F1, A, P);;
+gap> Length(ConsAP1);
+1
+gap> ConsAP1[1] = A;
+true
+gap> ConsAP2 := ContainedFConjugates(F2, A, P);;
+gap> Length(ConsAP2);
+3
+gap> ConsAP3 := ContainedFConjugates(F3, A, P);;
+gap> Length(ConsAP3);
+5
+gap> ConsAP4 := ContainedFConjugates(F4, A, P);;
+gap> Length(ConsAP4);
+1
+gap> ConsBP4 := ContainedFConjugates(F4, B, P);;
+gap> Length(ConsBP4);
+4
 
 #############################################################################
 ## IsomF, HomF
-
+gap> I1 := IsomF(F1, A, B);;
+gap> Length(I1);
+0
+gap> I2 := IsomF(F2, A, B);;
+gap> Length(I2);
+1
+gap> IsGroupHomomorphism(I2[1]);
+true
+gap> Source(I2[1]) = A;
+true
+gap> Range(I2[1]) = B;
+true
+gap> Image(I2[1]) = B;
+true
+gap> I1 = I2;
+false
+gap> I3 := IsomF(F3, A, B);;
+gap> I3 = I2;
+true
+gap> I4 = IsomF(F4, A, B);;
+gap> Length(I4);
+0
+gap> H1 := HomF(F1, A, P);;
+gap> Length(H1);
+1
+gap> Source(H1[1]) = A;
+true
+gap> Range(H1[1]) = P;
+true
+gap> Image(H1[1]) = A;
+true
+gap> H1[1] = RestrictedMapping(IdentityMapping(P), A);
+true
+gap> H2 := HomF(F2, A, P);;
+gap> Length(H2);
+3
+gap> ForAll(H2, phi -> Source(phi) = A and Range(phi) = P);
+true
+gap> H3 := HomF(F3, A, P);;
+gap> Length(H3);
+5
+gap> ForAll(H3, phi -> Source(phi) = A and Range(phi) = P);
+true
+gap> H4 := HomF(F4, A, P);;
+gap> Length(H4);
+1
+gap> H4 := HomF(F4, B, P);;
+gap> Length(H4);
+4
+gap> ForAll(H4, phi -> Source(phi) = A and Range(phi) = P);
+false
+gap> ForAll(H4, phi -> Source(phi) = B and Range(phi) = P);
+true
+gap> I1 = HomF(F1, A, B);
+true
 
 #############################################################################
 ## in
@@ -185,7 +275,7 @@ true
 gap> phi1 in F3;
 true
 gap> phi1 in F4;
-true
+false
 gap> phi2 in F1;
 false
 gap> phi2 in F2;
@@ -251,9 +341,7 @@ gap> Length(F4Norm);
 
 #############################################################################
 ## NPhi, ExtendMapToNPhi, IsFReceptive
-gap> phi := Identity(AutQ);;
-gap> phi = IdentityMapping(L[1]);
-true
+gap> phi := IdentityMapping(Q);;
 gap> N := NPhi(F1, phi);;
 gap> N = P;
 true
@@ -408,30 +496,29 @@ false
 gap> F1 = F4;
 false
 
-gap> f := ActionHomomorphism(P, P, OnRight);;
-gap> P := Image(f, P);;
-gap> Q := Image(f, L[1]);;
-gap> R := Image(f, L[2]);;
-gap> AutP := AutomorphismGroup(P);;
-gap> AutQ := AutomorphismGroup(Q);;
-gap> AutR := AutomorphismGroup(R);;
-gap> phi1 := First(AutQ, x -> Order(x) = 3);;
-gap> phi2 := First(AutR, x -> Order(x) = 3);;
-gap> phi3 := First(AutP, x -> Order(x) = 4);;
+gap> rho := ActionHomomorphism(P, P, OnRight);;
+gap> P := Image(rho, P);;
+gap> Q := Image(rho, Q);;
+gap> R := Image(rho, R);;
+gap> r := Image(rho, r);;
+gap> f := Image(rho, f);;
+gap> phi1 := GroupHomomorphismByImages(Q, [Q.1, Q.2], [Q.2, Q.1*Q.2]);;
+gap> phi2 := GroupHomomorphismByImages(R, [R.1, R.2], [R.2, R.1*R.2]);;
+gap> phi3 := GroupHomomorphismByImages(P, [r, f], [r, r*f]);;
 gap> G := SymmetricGroup(8);;
 gap> CGP := Centralizer(G, P);;
 gap> CGQ := Centralizer(G, Q);;
 gap> CGR := Centralizer(G, R);;
-gap> repA := RepresentativeAction(G, [Q.1, Q.2], [Image(phi1, Q.1), Image(phi1, Q.2)], OnTuples);;
-gap> a := First(RightCoset(CGQ, repA), a -> Order(a) = 3);; 
-gap> repB := RepresentativeAction(G, [R.1, R.2], [Image(phi2, R.1), Image(phi2, R.2)], OnTuples);;
-gap> b := First(RightCoset(CGR, repB), a -> Order(a) = 3);;
-gap> repC := RepresentativeAction(G, [P.1, P.2, P.3], [Image(phi3, P.1), Image(phi3, P.2), Image(phi3, P.3)], OnTuples);;
-gap> c := First(RightCoset(CGP, repC), a -> Order(a) = 4);;
-gap> G1 := Group(P.1, P.2, P.3);;
-gap> G2 := Group(P.1, P.2, P.3, a);;
-gap> G3 := Group(P.1, P.2, P.3, a, b);;
-gap> G4 := Group(P.1, P.2, P.3, c);;
+gap> repA := RepresentativeAction(G, [Q.1, Q.2], [Q.2, Q.1*Q.2], OnTuples);;
+gap> a := First(RightCoset(CGQ, repA), a -> Size(SylowSubgroup(Group(r, f, a), 2)) = 8);; 
+gap> repB := RepresentativeAction(G, [R.1, R.2], [R.2, R.1*R.2], OnTuples);;
+gap> b := First(RightCoset(CGR, repB), a -> Size(SylowSubgroup(Group(r, f, a), 2)) = 8);;
+gap> repC := RepresentativeAction(G, [r, f], [r, r*f], OnTuples);;
+gap> c := First(RightCoset(CGP, repC), a -> Size(SylowSubgroup(Group(r, f, a), 2)) = 32);;
+gap> G1 := Group(r, f);;
+gap> G2 := Group(r, f, a);;
+gap> G3 := Group(r, f, a, b);;
+gap> G4 := Group(r, f, c);;
 gap> Size(G1);
 8
 gap> Size(G2);
@@ -448,5 +535,4 @@ gap> Fs := [F1, F2, F3, F4];;
 gap> Es := [E1, E2, E3, E4];;
 gap> ForAll([1..4], i -> ForAll([1..4], j -> IsomorphismFusionSystems(Fs[i], Es[i]) <> fail or i = j));
 true
-
 gap> STOP_TEST( "fusion-system.tst", 10000 );

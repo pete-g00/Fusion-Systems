@@ -209,8 +209,8 @@ InstallMethod(HomF,
                     local phi;
                     
                     phi := enum!.maps[n];
-                    SetRange(phi, B);
-                    return phi;
+                    # TODO: Any better way to change the restrict the source/make the range larger?
+                    return GroupHomomorphismByFunction(A, B, x -> Image(phi, x));
                 end,
                 NumberElement := function( enum, elm )
                     local phi;
@@ -219,7 +219,7 @@ InstallMethod(HomF,
                         return fail;
                     fi;
 
-                    phi := GroupHomomorphismByFunction(A, B, elm);
+                    phi := GroupHomomorphismByFunction(A, B, x -> Image(elm, x));
                     return Position(enum!.maps, phi);
                 end,
                 Length := function ( enum )
