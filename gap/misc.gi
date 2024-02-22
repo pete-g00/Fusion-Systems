@@ -17,9 +17,6 @@ InstallMethod(ConjugationHomomorphism,
     "For $Q \\leq P$ and $g \\in N_P(Q)$, returns the automorphism map induced by $g$",
     [IsGroup, IsGroup, IsObject],
     function(A, B, g)
-        if not IsSubset(B, A^g) then 
-            Error("A^g is not a subset of B");
-        fi;
         return GroupHomomorphismByFunction(A, B, x -> x^g);
     end );
 
@@ -33,10 +30,6 @@ InstallMethod(Automizer,
             return Automizer(G, H);
         fi;
 
-        if not IsSubset(G, H) then 
-            Error("H is not a subset of G");
-        fi;
-        
         NGH := Normalizer(G, H);
         CGH := Centralizer(G, H);
 
