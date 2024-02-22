@@ -27,9 +27,9 @@ InstallMethod(\=,
     [IsFClass, IsFClass],
     function(clA, clB)
         local F1, F2, A, B, phi1, phi2, repsA, repsB, P;
-        
+
         F1 := UnderlyingFusionSystem(clA);
-        F2 := UnderlyingFusionSystem(clA);
+        F2 := UnderlyingFusionSystem(clB);
 
         if UnderlyingGroup(F1) <> UnderlyingGroup(F2) then 
             return false;
@@ -38,7 +38,7 @@ InstallMethod(\=,
         if CompareByIsom(Representative(clA), Representative(clB)) <> 0 then 
             return false;
         fi;
-
+        
         A := Representative(clA);
         B := Representative(clB);
 
@@ -65,8 +65,8 @@ InstallMethod(\=,
         fi;
         
         # check that there is a bijection between the co-cl representatives between the two
-        repsA := ConjugacyClassRepresentatives(A);
-        repsB := ConjugacyClassRepresentatives(B);
+        repsA := FClassReps(F1, A);
+        repsB := FClassReps(F2, B);
 
         if Length(repsA) <> Length(repsB) then 
             return false;
