@@ -14,7 +14,6 @@ BindGlobal( "FusionSystemFamily", NewFamily("FusionSystemFamily") );
 #! The implementation of most of these core attributes is dictated by the representation we choose. This means that it may be more efficient to interact with a fusion system depending on its representation.
 
 # TODO: Describe what would be a good way to represent fusion systems
-# TODO: Examples of using it INSTEAD of implementation details
 
 #! @Description
 #! Given a fusion system $\calF$ on a finite $p$-group $P$, returns the group $P$.
@@ -49,7 +48,7 @@ DeclareOperation("FClassReps", [IsFusionSystem, IsGroup]);
 #! @Description
 #! Given a fusion system $\calF$ on a finite $p$-group $P$, returns a representative from each $\calF$-conjugacy class in $P$. 
 #!
-#! Although this is a core operation, it is the same for every representation. We first find `ConjugacyClassesSubgroups(P)`, and then group them by isomorphism type (or size if the group is too big) to find a representative of an $\calF$-conjugacy class for each isomorphism type.
+#! This operation is time consuming since we need to find a representative from each $P$-conjugacy class, and then find which of them are $\calF$-conjugate.
 #! 
 #! @Arguments F
 #! @Returns a list of groups
@@ -59,18 +58,17 @@ DeclareAttribute("FClassesReps", IsFusionSystem);
 #! @Description
 #! Given a fusion system $\calF$ on a finite $p$-group $P$, returns all the $\calF$-conjugates of $A$ that are subsets of $B$.
 #! 
-#! Although this is a core operation, it is the same for every representation. If `Size(A)` is strictly smaller than `Size(B)`, then we look at the $\calF$-class of $A$ and return all those that are subsets of $B$. Otherwise, we check whether $A$ and $B$ are $\calF$-conjugate.
 #! @Arguments F A B
 #! @Returns a list of groups
 DeclareOperation("ContainedFConjugates", [IsFusionSystem, IsGroup, IsGroup]);
 
 #! @Section Complete Functionality
-#! These operations complement the core functionality. In particular, all of these operations make use of the core operations, which return a representative whenever possible, and give a complete list of values. Since these operations make use of the core functionality, it is possible that certain representations perform better than others. A brief description of the implementation is provided for each of the operations.
+#! These operations complement the core functionality. In particular, all of these operations make use of the core operations, which return a representative whenever possible, and give a complete list of values. Since these operations make use of the core functionality, it is possible that certain representations perform better than others.
 
 #! @Description
-#! Given a fusion system $\calF$ on a finite $p$-group and a subgroup $A \leq P$, returns all the subgroups in the $\calF$-conjugacy class of $A$. 
+#! Given a fusion system $\calF$ on a finite $p$-group and a subgroup $A \leq P$, returns all the subgroups in the $\calF$-conjugacy class of $A$. This operation returns a collection, represented by an `IsFClass` object.
 #! 
-#! This operation makes use of the `FClassReps` operation, which only returns a representative from each $P$-conjugacy class, and returns the entire $\calF$-conjugacy class. This operation returns a collection, represented by an `IsFClass` object.
+#! This operation makes use of the core operation `FClassReps`. 
 #! @Arguments F A
 #! @Returns a $\calF$-class
 DeclareOperation("FClass", [IsFusionSystem, IsGroup]);
@@ -78,7 +76,7 @@ DeclareOperation("FClass", [IsFusionSystem, IsGroup]);
 #! @Description
 #! Given a fusion system $\calF$ on a finite $p$-group $P$, returns a list of $\calF$-conjugacy classes of $P$. 
 #! 
-#! This operation makes use of the `FClassesReps` operation, which only returns a representative $A$ from each $\calF$-conjugacy class, and converts each representative into a $\calF$-conjugacy class using `FClass(F, A)`.
+#! This operation makes use of the core operation `FClassesReps`.
 #! @Arguments F
 #! @Returns a list of groups
 DeclareAttribute("FClasses", IsFusionSystem);
@@ -86,131 +84,202 @@ DeclareAttribute("FClasses", IsFusionSystem);
 # TODO: IsomF and HomF aren't returning the correct map range
 #! @Description
 #! Given a fusion system $\calF$ on a finite $p$-group $P$ and subgroups $A, B \leq P$, returns a list of isomorphisms $A \to B$ in $\calF$, i.e. the set $\Isom_\calF(A, B)$. If $A$ and $B$ are not $\calF$-conjugate, then this operation returns an empty list. 
-#! 
-#! This operation first calls `RepresentativeFIsomorphism(F, A, B)`, and uses `AutF(F, A)` to return the coset of isomorphisms.
 #! @Arguments F A B
 #! @Returns a list of isomorphisms
 DeclareOperation("IsomF", [IsFusionSystem, IsGroup, IsGroup]);
 
 #! @Description
 #! Given a fusion system $\calF$ on a finite $p$-group $P$ and subgroups $A, B \leq P$, returns a list of homomorphisms $A \to B$ in $\calF$, i.e. the set $\Hom_\calF(A, B)$. 
-#! 
-#! This operation first calls `ContainedFConjugates(F, A, B)` to find all subgroups of $B$ that $A$ is $\calF$-conjugate to, and then calls `IsomF(F, A, C)` for every subgroup $C \leq B$ that $A$ is $\calF$-conjugate to.
 #! @Arguments F A B
 #! @Returns a list of homomorphisms
 DeclareOperation("HomF", [IsFusionSystem, IsGroup, IsGroup]);
 
 #! @Section Auxiliary Operations
-#! The auxiliary operations on fusion systems are those that allow us to infer certain properties about the subgroups, such as checking whether a subgroup is fully normalized. They make use of the core operations, and not their complete versions, for efficiency whenever possible. A brief description of the implementation is provided for each of the operations.
+#! The auxiliary operations on fusion systems are those that allow us to infer certain properties about the subgroups, such as checking whether a subgroup is fully normalized. They make use of the core operations, and not their complete versions, for efficiency whenever possible. 
 
 #! @Description
 #! Given a fusion system $\calF$ on a finite $p$-group $P$ and a subgroups $A, B \leq P$, checks whether $A$ and $B$ are $\calF$-conjugate. 
-#! 
-#! This is done by checking that `RepresentativeFIsomorphism(F, A, B)` doesn't return `fail`.
 #! @Arguments F A B
 #! @Returns `true` or `false`
 DeclareOperation("AreFConjugate", [IsFusionSystem, IsGroup, IsGroup]);
 
 #! @Description
 #! Given a fusion system $\calF$ on a finite $p$-group $P$ and a map $\phi \colon A \to B$, checks whether $A, B \leq P$ and $\phi \in \Hom_\calF(A, B)$. 
-#! 
-#! We first find `RepresentativeFIsomorphism(F, A, Image(phi))` to see if the 2 subgroups are $\calF$-conjugate, and to generate a second map $\psi \colon A \to A\phi$. If they are $\calF$-conjugate, then we check whether the map $\psi \phi^{-1}$ lies in `AutF(F, A)`.
 #! @Arguments phi F
 #! @Returns `true` or `false`
 DeclareOperation("\in", [IsGroupHomomorphism, IsFusionSystem]);
 
 #! @Description
 #! Given a fusion system $\calF$ on a finite $p$-group $P$ and a subgroup $A \leq P$, checks whether $A$ is fully $\calF$-normalized. 
-#! 
-#! This is done by checking whether the size of `Normalizer(P, A)` is maximal amongst the normalizer of all subgoups $B$ that lie in `FClassReps(F, A)`.
 #! @Arguments F A
 #! @Returns `true` or `false`
 DeclareOperation("IsFullyNormalized", [IsFusionSystem, IsGroup]);
 
 #! @Description
 #! Given a fusion system $\calF$ on a finite $p$-group $P$ and a subgroup $A \leq P$, checks whether $A$ is fully $\calF$-centralized. 
-#! 
-#! This is done by checking whether the size of `Centralizer(P, A)` is maximal amongst the centralizer of all subgoups $B$ that lie in `FClassReps(F, A)`.
 #! @Arguments F A
 #! @Returns `true` or `false`
 DeclareOperation("IsFullyCentralized", [IsFusionSystem, IsGroup]);
 
 #! @Description
 #! Given a fusion system $\calF$ on a finite $p$-group $P$ and a subgroup $A \leq P$, checks whether $A$ is fully $\calF$-centralized. 
-#! 
-#! This is done by checking whether `Automizer(P, A)` is a Sylow $p$-subgroup of `AutF(F, A)`.
 #! @Arguments F A
 #! @Returns `true` or `false`
 DeclareOperation("IsFullyAutomized", [IsFusionSystem, IsGroup]);
 
+#! @BeginExample
+#! gap> G := AlternatingGroup(4);
+#! Alt( [ 1 .. 4 ] )
+#! gap> H := SymmetricGroup(4);
+#! Sym( [ 1 .. 4 ] )
+#! gap> P := SylowSubgroup(G, 2);
+#! Group([ (1,2)(3,4), (1,3)(2,4) ])
+#! gap> F1 := RealizedFusionSystem(G, P);
+#! Fusion System on Group( [ (1,2)(3,4), (1,3)(2,4) ] )
+#! gap> F2 := RealizedFusionSystem(H, P);
+#! Fusion System on Group( [ (1,2)(3,4), (1,3)(2,4) ] )
+#! gap> IsFullyNormalized(F1, P);
+#! true
+#! gap> IsFullyCentralized(F2, P);
+#! true
+#! gap> IsFullyAutomized(F1, P);
+#! true
+#! gap> IsFullyAutomized(F2, P);
+#! false
+#! @EndExample
+
 #! @Description
 #! Given a fusion system $\calF$ on a finite $p$-group $P$ and a map $\phi \colon A \to B$ in $\calF$, computes the group $N_\phi$. 
-#!
-#! This is done by transversing $AC_P(A)$ in $N_P(A)$, and checking which ones satisfy the $N_\phi$ condition, i.e. whether $x \in N_P(A)$ satisfies $c_x^\phi \in \Aut_P(B)$.
 #! @Arguments F phi
 #! @Returns a group
 DeclareOperation("NPhi", [IsFusionSystem, IsGroupHomomorphism]);
 
 #! @Description
 #! Given a fusion system $\calF$ on a finite $p$-group $P$ and a map $\phi \colon A \to B$ in $\calF$, tries to extend this map to $\overline{\phi} \colon N_\phi \to N_P(B)$. If successful, we return the given map; otherwise, we return `fail`.
-#! 
-#! This is done by checking whether there exists an extension of $\phi$ in the set $\Hom_\calF(N_\phi, N_P(B))$.
-#! 
 #! @Arguments F phi
 #! @Returns a homomorphism or `fail`
 DeclareOperation("ExtendMapToNPhi", [IsFusionSystem, IsGroupHomomorphism]);
 
 #! @Description
 #! Given a fusion system $\calF$ on a finite $p$-group $P$ and a subgroup $A \leq P$, checks whether $A$ is $\calF$-receptive.
-#! 
-#!  This is done by checking with every $B$ in `FClassRep(F, A)` whether for every a representative map $\phi \colon A \to A$ from the cosets of $\Aut_\calF(Q)/\Aut_P(Q)$, the map $\sigma = \phi*\psi$ extends $N_\sigma$, where $\psi$ is a representative $\calF$-isomorphism $A \to B$.
 #! @Arguments F A
 #! @Returns `true` or `false`
 DeclareOperation("IsFReceptive", [IsFusionSystem, IsGroup]);
 
+#! @BeginExample
+#! gap> G := SymmetricGroup(4);
+#! Sym( [ 1 .. 4 ] )
+#! gap> P := SylowSubgroup(G, 2);
+#! Group([ (1,2), (3,4), (1,3)(2,4) ])
+#! gap> A := Group(P.1);
+#! Group([ (1,2) ])
+#! gap> B := Group(P.3);
+#! Group([ (1,3)(2,4) ])
+#! gap> F := RealizedFusionSystem(G, P);
+#! Fusion System on Group( [ (1,2), (3,4), (1,3)(2,4) ] )
+#! gap> IsFReceptive(F, A);
+#! true
+#! gap> IsFReceptive(F, B);
+#! false
+#! @EndExample
+
 #! @Description
 #! Given a fusion system $\calF$ on a finite $p$-group $P$ and a subgroup $A \leq P$, checks whether $A$ is $\calF$-centric. 
-#! 
-#! This is done by checking whether every $B$ in `FClassReps(F, A)` satisfies $C_P(B) \leq B$.
 #! @Arguments F A
 #! @Returns `true` or `false`
 DeclareOperation("IsFCentric", [IsFusionSystem, IsGroup]);
 
 #! @Description
 #! Given a fusion system $\calF$ on a finite $p$-group $P$ and a subgroup $A \leq P$, checks whether $A$ is $\calF$-radical. 
-#! 
-#! This is done by checking whether $O_p(A) = \Inn(A)$.
 #! @Arguments F A
 #! @Returns `true` or `false`
 DeclareOperation("IsFRadical", [IsFusionSystem, IsGroup]);
 
 #! @Description
 #! Given a fusion system $\calF$ on a finite $p$-group $P$ and a subgroup $A \leq P$, checks whether $A$ is essential in $\calF$. 
-#! 
-#! This is done by first checking whether $A$ is $\calF$-centric, and if so, whether $\Out_\calF(Q) = \Aut_\calF(Q)/\Inn(Q)$ contains a strongly $p$-embedded subgroup (up to conjugacy class).
 #! @Arguments F A
 #! @Returns `true` or `false`
 DeclareOperation("IsFEssential", [IsFusionSystem, IsGroup]);
 
+#! @BeginExample
+#! gap> G := AlternatingGroup(6);
+#! Alt( [ 1 .. 6 ] )
+#! gap> P := SylowSubgroup(G, 2);
+#! Group([ (1,2)(3,4), (1,3)(2,4), (1,2)(5,6) ])
+#! gap> H := Group(P.1, P.2, P.3, (3,5)(4,6));
+#! Group([ (1,2)(3,4), (1,3)(2,4), (1,2)(5,6), (3,5)(4,6) ])
+#! gap> A := Group(P.1, P.2);
+#! Group([ (1,2)(3,4), (1,3)(2,4) ])
+#! gap> B := Group(P.1, P.3);
+#! Group([ (1,2)(3,4), (1,2)(5,6) ])
+#! gap> F1 := RealizedFusionSystem(G, P);
+#! Fusion System on Group( [ (1,2)(3,4), (1,3)(2,4), (1,2)(5,6) ] )
+#! gap> F2 := RealizedFusionSystem(H, P);
+#! Fusion System on Group( [ (1,2)(3,4), (1,3)(2,4), (1,2)(5,6) ] )
+#! gap> IsFEssential(F1, A);
+#! true
+#! gap> IsFEssential(F1, B);
+#! true
+#! gap> IsFEssential(F2, B);
+#! true
+#! gap> IsFEssential(F2, A);
+#! false
+#! @EndExample
+
+# TODO: Experiment with the different definitions of IsSaturated to improve efficiency both when it is and isn't saturated
 #! @Description
 #! Given a fusion system $\calF$ on a finite $p$-group $P$, checks whether $\calF$ is saturated. 
-#! 
-#! This is done by checking whether for every $\calF$-class rep $A$, there exists a $\calF$-conjugate of $Q$ (up to $P$-conjugation) that is fully $\calF$-automized and $\calF$-receptive.
 #! @Arguments F
 DeclareProperty("IsSaturated", IsFusionSystem);
 
+#! @BeginExample
+#! gap> G := AlternatingGroup(4);
+#! Alt( [ 1 .. 4 ] )
+#! gap> H := SymmetricGroup(4);
+#! Sym( [ 1 .. 4 ] )
+#! gap> P := SylowSubgroup(G, 2);
+#! Group([ (1,2)(3,4), (1,3)(2,4) ])
+#! gap> F1 := RealizedFusionSystem(G, P);
+#! Fusion System on Group( [ (1,2)(3,4), (1,3)(2,4) ] )
+#! gap> F2 := RealizedFusionSystem(H, P);
+#! Fusion System on Group( [ (1,2)(3,4), (1,3)(2,4) ] )
+#! gap> IsSaturated(F1);
+#! true
+#! gap> IsSaturated(F2);
+#! false
+#! @EndExample
+
 #! @Description
 #! Given two fusion systems $\calF_1$ and $\calF_2$ on finite $p$-groups $P_1$ and $P_2$ respectively, checks whether $\calF_1 = \calF_2$. 
-#! 
-#! This is done by checking whether for every $\calF$-conjugcy class representative $A$, the automorphism groups and the $\calF$-classes are equal.
 #! @Arguments F1 F2
 #! @Returns `true` or `false`
 DeclareOperation("\=", [IsFusionSystem, IsFusionSystem]);
 
+#! @BeginExample
+#! gap> G1 := AlternatingGroup(4);
+#! Alt( [ 1 .. 4 ] )
+#! gap> G2 := SymmetricGroup(4);
+#! Sym( [ 1 .. 4 ] )
+#! gap> G3 := Group(G1.1, G1.2, (5,6));
+#! Group([ (1,2,3), (2,3,4), (5,6) ])
+#! gap> P := SylowSubgroup(G1, 2);
+#! Group([ (1,2)(3,4), (1,3)(2,4) ])
+#! gap> F1 := RealizedFusionSystem(G1, P);
+#! Fusion System on Group( [ (1,2)(3,4), (1,3)(2,4) ] )
+#! gap> F2 := RealizedFusionSystem(G2, P);
+#! Fusion System on Group( [ (1,2)(3,4), (1,3)(2,4) ] )
+#! gap> F3 := RealizedFusionSystem(G3, P);
+#! Fusion System on Group( [ (1,2)(3,4), (1,3)(2,4) ] )
+#! gap> F1 = F1;
+#! true
+#! gap> F1 = F2;
+#! false
+#! gap> F1 = F3;
+#! true
+#! @EndExample
+
 #! @Description
-#! Given fusion systems $\calF_1$ and $\calF_2$ on a finite $p$-groups $P$ and $Q$ respectively, tries to find an isomophism of fusion systems $\calF_1 \to \calF_2$. If there is no such isomorphism, returns `fail`.
-#! 
-#! This is done by first finding an isomorphism between the groups $P$ and $Q$, using `IsomorphismGroups(P, Q)`. If successful, we then check for every representative $\phi$ from each coset of `AutomorphismGroup(P)` in `AutF(F, P)` whether $\calF_1^\phi = \calF_2$.
+#! Given fusion systems $\calF_1$ and $\calF_2$ on a finite $p$-groups $P$ and $Q$ respectively, tries to find an isomorphism of fusion systems $\calF_1 \to \calF_2$. If there is no such isomorphism, returns `fail`.
 #! @Arguments F1 F2
 #! @Returns an isomorphism or `fail`
 DeclareOperation("IsomorphismFusionSystems", [IsFusionSystem, IsFusionSystem]);

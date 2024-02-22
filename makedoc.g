@@ -9,8 +9,9 @@ AutoDoc( rec(
             \newcommand{\calE}{\mathcal{E}}
             \newcommand{\calU}{\mathcal{U}}
             \newcommand{\Aut}{\operatorname{Aut}}
-            \newcommand{\Hom}{\operatorname{Hom}}
+            \newcommand{\Out}{\operatorname{Out}}
             \newcommand{\Inn}{\operatorname{Inn}}
+            \newcommand{\Hom}{\operatorname{Hom}}
             \newcommand{\Isom}{\operatorname{Isom}}
         """ )
     ),

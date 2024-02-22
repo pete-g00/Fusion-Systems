@@ -8,8 +8,16 @@
 DeclareOperation("ConjugationHomomorphism", [IsGroup, IsGroup, IsObject]);
 
 #! @Description
-#! Given a prime power $q = p^n$, returns the prime $p$
+#! Given a prime power $q = p^n$, returns the prime $p$. If $q$ is not a prime power, then returns `fail`.
+#! @Arguments q
 DeclareOperation("FindPrimeOfPrimePower", [IsScalar]);
+
+#! @BeginExample
+#! gap> FindPrimeOfPrimePower(1024);
+#! 2
+#! gap> FindPrimeOfPrimePower(10);
+#! fail
+#! @EndExample
 
 #! @BeginGroup Automizers
 #! @Arguments G H
