@@ -11,9 +11,9 @@ AddIsomsDFS := function(FReps, F, visited, maps, repIsoms, i, classReps)
 
     A := FReps[i];
     visited[i] := true;
-
+    
     VisitByMap := function(phi)
-        local L, B, C, j, rPhi, alpha, beta;
+        local L, B, C, j, rPhi, alpha, beta, gamma;
 
         L := ContainedFConjugates(F, A, Source(phi));
 
@@ -27,8 +27,10 @@ AddIsomsDFS := function(FReps, F, visited, maps, repIsoms, i, classReps)
                 rPhi := RestrictedMapping(phi, B);
                 alpha := RepresentativeFIsomorphism(F, B, A);
                 beta := repIsoms[i];
-                # rPhi: B -> C; beta: B -> A; alpha: A -> Q
-                repIsoms[j] := RestrictedInverseGeneralMapping(rPhi) * alpha * beta;
+                gamma := RepresentativeFIsomorphism(F, A, Source(beta));
+
+                # rPhi: B -> C; alpha: B -> A; gamma: A -> A', beta: A' -> Q
+                repIsoms[j] := RestrictedInverseGeneralMapping(rPhi) * alpha * gamma * beta;
                 
                 AddIsomsDFS(FReps, F, visited, maps, repIsoms, j, classReps);
             fi;
