@@ -6,14 +6,14 @@ InstallMethod(GeneratedFusionSystem,
     end );
 
 # goes through all the maps and does a depth-first search looking at all maps that start from an F-conjugate of FReps[i]
-AddIsomsDFS := function(FReps, F, visited, maps, repIsoms, i, classReps)
+AddIsomsDFS := function(FReps, F, visited, maps, repIsoms, i, classReps, newAuts)
     local A, VisitByMap, phi;
 
     A := FReps[i];
     visited[i] := true;
     
     VisitByMap := function(phi)
-        local L, B, C, j, rPhi, alpha, beta, gamma;
+        local L, B, C, j, rPhi, alpha, beta, AutFC, possibleAuts, aut;
 
         L := ContainedFConjugates(F, A, Source(phi));
 
@@ -25,14 +25,23 @@ AddIsomsDFS := function(FReps, F, visited, maps, repIsoms, i, classReps)
             if not visited[j] then 
                 Add(classReps, FReps[j]);
                 rPhi := RestrictedMapping(phi, B);
-                alpha := RepresentativeFIsomorphism(F, B, A);
                 beta := repIsoms[i];
-                gamma := RepresentativeFIsomorphism(F, A, Source(beta));
+                alpha := RepresentativeFIsomorphism(F, B, Source(beta));
 
-                # rPhi: B -> C; alpha: B -> A; gamma: A -> A', beta: A' -> Q
-                repIsoms[j] := RestrictedInverseGeneralMapping(rPhi) * alpha * gamma * beta;
+                # rPhi: B -> C; alpha: B -> A; beta: A -> Q
+                repIsoms[j] := RestrictedInverseGeneralMapping(rPhi) * alpha * beta;
+                AutFC := AutF(F, C);
+
+                if not IsTrivial(AutFC) then 
+                    possibleAuts := OnFunctionListApplication(GeneratorsOfGroup(AutFC), repIsoms[j]);
+                    for aut in possibleAuts do 
+                        if IsEmpty(newAuts) or not aut in Group(newAuts) then 
+                            Add(newAuts, aut);
+                        fi;
+                    od;
+                fi;
                 
-                AddIsomsDFS(FReps, F, visited, maps, repIsoms, j, classReps);
+                AddIsomsDFS(FReps, F, visited, maps, repIsoms, j, classReps, newAuts);
             fi;
         od;
     end;
@@ -90,6 +99,7 @@ AddNewAutomorphism := function(phi, Q, AutGenList, NewFIsoms, NewFReps, F)
     Assert(0, i <> fail);
 
     # if alpha is not a map already NewFAuts[i]), then add to NewFAuts[i] alpha
+    # Print(AutGenList[i]);
     if not alpha in Group(AutGenList[i]) then 
         Add(AutGenList[i], alpha);
     fi;
@@ -99,7 +109,7 @@ InstallMethod(GeneratedFusionSystem,
     "Constructs a generated fusion system on some fusion system",
     [IsFusionSystem, IsListOrCollection],
     function(F, maps)
-        local FReps, NewFReps, NewFClassesReps, NewFIsoms, NewFAuts, label, reps, visited, repIsoms, newReps, classesReps, classReps, i, A, phi, B, C, Q;
+        local FReps, NewFReps, NewFClassesReps, NewFIsoms, NewFAuts, label, reps, visited, repIsoms, newReps, classesReps, newAutList, classReps, newAuts, i, A, phi, B, C, Q;
 
         if ForAny(maps, phi -> not IsInjective(phi)or not IsGroupHomomorphism(phi)) then 
             Error("Not all maps are injective homomorphisms");
@@ -124,25 +134,30 @@ InstallMethod(GeneratedFusionSystem,
             repIsoms := List(reps, Q -> IdentityMapping(Q));
             newReps := [];
             classesReps := [];
+            newAutList := [];
 
             for i in [1..Length(reps)] do 
                 if not visited[i] then 
                     classReps := [reps[i]];
-                    AddIsomsDFS(reps, F, visited, maps, repIsoms, i, classReps);
+                    newAuts := ShallowCopy(GeneratorsOfGroup(AutF(F, reps[i])));
+                    AddIsomsDFS(reps, F, visited, maps, repIsoms, i, classReps, newAuts);
                     Add(newReps, reps[i]);
                     Add(classesReps, classReps);
+                    Add(newAutList, newAuts);
                 fi;
             od;
 
             NewFReps.(label) := newReps;
             NewFClassesReps.(label) := classesReps;
             NewFIsoms.(label) := repIsoms;
+            NewFAuts.(label) := newAutList;
 
             # establish the new automorphisms
-            if not label in RecNames(NewFAuts) then 
-                # TODO: Ensure that we've combined AutF here using the newFClassesReps
-                NewFAuts.(label) := List(NewFReps.(label), Q -> ShallowCopy(GeneratorsOfGroup(AutF(F, Q))));
-            fi;
+            # if not label in RecNames(NewFAuts) then 
+            #     # TODO: Ensure that we've combined AutF here using the newFClassesReps
+            #     NewFAuts.(label) := List(NewFReps.(label), 
+            #         Q -> ShallowCopy(GeneratorsOfGroup(AutF(F, Q))));
+            # fi;
 
             for A in reps do 
                 for phi in maps do 
