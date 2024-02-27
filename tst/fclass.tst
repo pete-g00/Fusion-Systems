@@ -1,25 +1,76 @@
 gap> START_TEST("Fusion Systems package: fclass.tst");
+
+#############################################################################
+## Initial Definitions
+
 gap> G := AlternatingGroup(6);;
 gap> P := SylowSubgroup(G, 2);;
 gap> F := RealizedFusionSystem(G, P);;
-gap> C := ConjugacyClassesSubgroups(P);;
-gap> FCls := List(C, c -> FClass(F, Representative(c)));;
-gap> List(FCls, Size);
-[ 1, 5, 5, 5, 1, 1, 1, 1 ]
-gap> List(FCls, c -> Size(Representative(c)));
-[ 1, 2, 2, 2, 4, 4, 4, 8 ]
-gap> ForAll(FCls, Cl -> UnderlyingFusionSystem(Cl) = F);
+
+gap> r := First(P, r -> Order(r) = 4);;
+gap> f := First(P, f -> Order(f) = 2 and not f in Group(r));;
+
+gap> Q := Group(r^2, f);;
+gap> R := Group(r^2, r*f);;
+gap> A := Group(r^2);;
+gap> B := Group(f);;
+gap> C := Group(r*f);;
+
+gap> clQ := FClass(F, Q);;
+gap> clR := FClass(F, R);;
+gap> clA := FClass(F, A);;
+gap> clB := FClass(F, B);;
+gap> clC := FClass(F, C);;
+
+#############################################################################
+## UnderlyingFusionSystem
+gap> UnderlyingFusionSystem(clQ) = F;
 true
-gap> FCls[1] = FCls[2];
+gap> UnderlyingFusionSystem(clR) = F;
+true
+gap> UnderlyingFusionSystem(clA) = F;
+true
+gap> UnderlyingFusionSystem(clB) = F;
+true
+gap> UnderlyingFusionSystem(clC) = F;
+true
+
+#############################################################################
+## Size
+
+gap> Size(clQ);
+1
+gap> Size(clR);
+1
+gap> Size(clA);
+5
+gap> Size(clB);
+5
+gap> Size(clC);
+5
+
+#############################################################################
+## in
+
+gap> Q in clQ;
+true
+gap> Q in clR;
 false
-gap> FCls[2] = FCls[3];
+gap> A in clB;
 true
-gap> FCls[2] = FCls[2];
+gap> B in clB;
 true
-gap> ForAll(FCls, Cl -> ForAll(C, c -> c in C));
+gap> C in clB;
 true
-gap> ForAll(FCls, Cl -> ForAll(Cl, c -> Size(Representative(Cl)) = Size(c)));
+
+#############################################################################
+## =
+
+gap> clQ = clR;
+false
+gap> clA = clB;
 true
-gap> ForAll(FCls, Cl -> ForAll(Cl, c -> IdGroup(Representative(Cl)) = IdGroup(c)));
+gap> clC = clB;
 true
+
 gap> STOP_TEST( "fclass.tst", 10000 );

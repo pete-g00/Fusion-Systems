@@ -283,3 +283,20 @@ DeclareOperation("\=", [IsFusionSystem, IsFusionSystem]);
 #! @Arguments F1 F2
 #! @Returns an isomorphism or `fail`
 DeclareOperation("IsomorphismFusionSystems", [IsFusionSystem, IsFusionSystem]);
+
+#! @BeginExample
+#! gap> G1 := AlternatingGroup(4);
+#! Alt( [ 1 .. 4 ] )
+#! gap> P1 := SylowSubgroup(G, 2);
+#! Group([ (1,2)(3,4), (1,3)(2,4) ])
+#! gap> F1 := RealizedFusionSystem(G1, P1);
+#! Fusion System on Group( [ (1,2)(3,4), (1,3)(2,4) ] )
+#! gap> P2 := ElementaryAbelianGroup(4);
+#! <pc group of size 4 with 2 generators>
+#! gap> phi := GroupHomomorphismByImages(P2, [P2.1, P2.2], [P2.2, P2.1*P2.2]);
+#! [ f1, f2 ] -> [ f2, f1*f2 ]
+#! gap> F2 := GeneratedFusionSystem(P2, [phi]);
+#! Fusion System on Group( [ (1,2)(3,4), (1,3)(2,4) ] )
+#! gap> IsomorphismFusionSystems(F1, F2);
+#! [ (1,2)(3,4), (1,3)(2,4) ] -> [ f1, f2 ]
+#! @EndExample

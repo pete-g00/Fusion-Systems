@@ -3,6 +3,7 @@
 
 #! @Section Operations
 
+# TODO: Improve code
 # Given subgroups $A$ and $B$ of some group $G$, and a $g \in G$ such that 
 # $A^g \leq B$, defines the homomorphism $A \to B$ by $a \mapsto a^g$
 DeclareOperation("ConjugationHomomorphism", [IsGroup, IsGroup, IsObject]);
@@ -46,6 +47,7 @@ DeclareOperation("Automizer", [IsGroupOfAutomorphisms, IsGroup]);
 #! @Returns a homomorphism
 DeclareOperation("AutomizerHomomorphism", [IsGroup, IsGroup]);
 
+# TODO: Improve code
 #! @Description 
 #! Given two homomorphisms $\phi$ and $\psi$, checks whether $\psi$ is a restriction of $\phi$
 #! 
@@ -61,6 +63,7 @@ DeclareOperation("IsRestrictedHomomorphism", [IsGroupHomomorphism, IsGroupHomomo
 # # Checks whether a homomorphism acts trivially on the given subgroup
 # DeclareOperation("CentralizesSubgroup", [IsGroupHomomorphism, IsGroup]);
 
+# TODO: Improve code
 #! @Description 
 #! Let $G$ be a group, with subgroups $A$ and $B$ and a homomorphism $\phi \colon A \to B$. If $L \subseteq \Aut(P)$, then the operation `FindHomExtension(phi, L)` finds an extension in $L$ of $\phi$. If we cannot find an extension, then the operation returns `fail`.
 #! 
@@ -81,11 +84,20 @@ DeclareOperation("FindHomExtension", [IsGroupHomomorphism, IsCollection]);
 
 #! @Description
 #! Given a group $G$, a subgroup $M$ and a prime $p$, checks whether $H$ is strongly $p$-embedded.
-#! 
-#! This operation first checks whether $M$ contains a Sylow $p$-subgroup of $G$. If so, we then check whether for every representative $g$ of $G/N_G(M)$ not in $M$, whether $M \cap M^g$ is a $p'$-group.
 #! @Arguments G M p
 #! @Returns `true` or `false`
 DeclareOperation("IsStronglyPEmbedded", [IsGroup, IsGroup, IsScalar]);
+
+#! @BeginExample
+#! gap> P := Group((1,2,3), (1,3));
+#! Group([ (1,2,3), (1,3) ])
+#! gap> Q := Group(P.1);
+#! Group([ (1,2,3) ])
+#! gap> IsStronglyPEmbedded(P, Q, 2);
+#! false
+#! gap> IsStronglyPEmbedded(P, Q, 3);
+#! true
+#! @EndExample
 
 # TODO: Probably need to do something better here?
 DeclareGlobalFunction("UnionEnumerator");

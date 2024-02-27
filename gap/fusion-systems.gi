@@ -389,11 +389,13 @@ InstallMethod(IsSaturated,
     "Checks whether the fusion system is saturated",
     [IsFusionSystem],
     function(F)
-        # return  IsFullyAutomized(F, UnderlyingGroup(F)) and
-        #         ForAll(FClassesReps(F), Q -> ForAll(FClassReps(F, Q), R -> not IsFullyNormalized(F, R) or IsFReceptive(F, R)))
-        return ForAll(Reversed(FClassesReps(F)), Q -> 
-            ForAny(FClassReps(F, Q), R -> IsFullyAutomized(F, R) and IsFReceptive(F, R))
-        );
+        local C, Cls;
+        
+        C := FClassesReps(F);
+        Cls := List(C, Q -> FClassReps(F, Q));
+
+        return ForAll([1..Length(C)], i -> ForAny(Cls[i], R -> IsFullyAutomized(F, R))) and
+            ForAll([1..Length(C)], i -> ForAll(Cls[i], R -> not IsFullyNormalized(F, R) or IsFReceptive(F, R)));
     end );
 
 InstallMethod(IsFCentric,
@@ -443,7 +445,7 @@ InstallMethod(\=,
     "Checks whether two fusion systems are equal",
     [IsFusionSystem, IsFusionSystem],
     function(F, E)
-        local classF, A, classE, Auts, sigma, i;
+        local C;
 
         if IsIdenticalObj(F, E) then 
             return true;
@@ -455,8 +457,13 @@ InstallMethod(\=,
 
         # compute the E-conjugacy classes and check they are the same as classes in F
         # check whether the size of the automorphism groups match and the F-classes
-        return ForAll(FClassesReps(F), 
-            Q -> AutF(F, Q) = AutF(E, Q) and FClass(F, Q) = FClass(E, Q));
+        # TODO: Might be simpler to just check using P-cocl (which may be faster to compute?)
+        C := FClassesReps(F);
+
+        # (checking AutF is faster than FClass in general)
+        return 
+            ForAll(FClassesReps(F), Q -> AutF(F, Q) = AutF(E, Q)) and
+            ForAll(FClassesReps(F), Q -> FClass(F, Q) = FClass(E, Q));
     end );
 
 InstallMethod(IsomorphismFusionSystems,

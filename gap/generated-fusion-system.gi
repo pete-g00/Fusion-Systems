@@ -140,6 +140,7 @@ InstallMethod(GeneratedFusionSystem,
 
             # establish the new automorphisms
             if not label in RecNames(NewFAuts) then 
+                # TODO: Ensure that we've combined AutF here using the newFClassesReps
                 NewFAuts.(label) := List(NewFReps.(label), Q -> ShallowCopy(GeneratorsOfGroup(AutF(F, Q))));
             fi;
 
@@ -235,9 +236,10 @@ InstallMethod(AutF,
         Assert(0, psi <> fail);
         r := RepresentativeFIsomorphism(F, Source(psi), A);
         
-        AutGens := First(F!.NewFAuts.(label), L -> not IsEmpty(L) and Source(Representative(L)) = Image(psi));
+        AutGens := First(F!.NewFAuts.(label), 
+            L -> not IsEmpty(L) and Source(Representative(L)) = Image(psi));
         Assert(0, AutGens <> fail);
+        # Print(Size(Group(AutGens)), "\n");
 
-        
         return Group(OnFunctionListApplication(AutGens, InverseGeneralMapping(psi) * r));
     end );
