@@ -149,12 +149,6 @@ DeclareOperation("IsFullyAutomized", [IsFusionSystem, IsGroup]);
 #! @EndExample
 
 #! @Description
-#! Given a fusion system $\calF$ on a finite $p$-group $P$ and a map $\phi \colon A \to B$ in $\calF$, computes the group $N_\phi$. 
-#! @Arguments F phi
-#! @Returns a group
-DeclareOperation("NPhi", [IsFusionSystem, IsGroupHomomorphism]);
-
-#! @Description
 #! Given a fusion system $\calF$ on a finite $p$-group $P$ and a map $\phi \colon A \to B$ in $\calF$, tries to extend this map to $\overline{\phi} \colon N_\phi \to N_P(B)$. If successful, we return the given map; otherwise, we return `fail`.
 #! @Arguments F phi
 #! @Returns a homomorphism or `fail`

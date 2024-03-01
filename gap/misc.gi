@@ -33,8 +33,8 @@ InstallMethod(Automizer,
         NGH := Normalizer(G, H);
         CGH := Centralizer(G, H);
 
+        # Use the arbitrary representation of NGH/CGH to find the generators of AutGH
         phi := NaturalHomomorphismByNormalSubgroupNC(NGH, CGH);
-
         Gens := GeneratorsOfGroup(Image(phi));
 
         if IsEmpty(Gens) then 
@@ -77,6 +77,7 @@ InstallMethod(Automizer,
         fi;
         
         AutGens := List(Gens, 
+            # TODO: Could this be more efficient?
             psi -> GroupHomomorphismByFunction(H, H, x -> OnImage(x, PreImagesRepresentative(phi, psi))));
         
         AutG := Group(AutGens);
@@ -85,15 +86,41 @@ InstallMethod(Automizer,
         return AutG;
     end );
 
+InstallMethod(NPhi,
+    "Given a map $\\phi$, computes $N_\\phi$ in $P$",
+    [IsGroup, IsGroupHomomorphism],
+    function(P, phi)
+        local Q, R, CPQ, NPQ, AutPR, NPhiGens, QCPQ, g, N;
+
+        Q := Source(phi);
+        R := Image(phi);
+
+        CPQ := Centralizer(P, Q);
+        NPQ := Normalizer(P, Q);
+        AutPR := Automizer(P, R);
+
+        NPhiGens := Union(GeneratorsOfGroup(Q), GeneratorsOfGroup(CPQ));
+        QCPQ := Group(NPhiGens);
+
+        # Transverse NPQ in QCPQ and find all those g such that c_g^\phi \in \Aut_P(R)
+        for g in RightTransversal(NPQ, QCPQ) do 
+            if not g in Group(NPhiGens) and ConjugatorAutomorphismNC(P, g)^phi in AutPR then 
+                Add(NPhiGens, g);
+
+                if Group(NPhiGens) = NPQ then 
+                    return NPQ;
+                fi;
+            fi;
+        od;
+
+        return Group(NPhiGens);
+    end );
+
 InstallMethod(AutomizerHomomorphism,
     "Given $H \\leq G$, constructs the homomorphism $N_G(H) \\to \\Aut_G(H)$",
     [IsGroup, IsGroup],
     function(G, H)
         local NGH, CGH, Aut;
-        
-        if not IsSubset(G, H) then 
-            Error("H is not a subset of G");
-        fi;
 
         NGH := Normalizer(G, H);
         CGH := Centralizer(G, H);

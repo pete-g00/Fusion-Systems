@@ -26,7 +26,7 @@ InstallMethod(\=,
     "Checks whether two FClasses are equal",
     [IsFClass, IsFClass],
     function(clA, clB)
-        local F1, F2, A, B, phi1, phi2, repsA, repsB, P;
+        local F1, F2, A, B, phi1, phi2, repsA, repsB, P, Q, j;
 
         F1 := UnderlyingFusionSystem(clA);
         F2 := UnderlyingFusionSystem(clB);
@@ -66,7 +66,7 @@ InstallMethod(\=,
         
         # check that there is a bijection between the co-cl representatives between the two
         repsA := FClassReps(F1, A);
-        repsB := FClassReps(F2, B);
+        repsB := ShallowCopy(FClassReps(F2, B));
 
         if Length(repsA) <> Length(repsB) then 
             return false;
@@ -74,7 +74,16 @@ InstallMethod(\=,
         
         P := UnderlyingGroup(F1);
 
-        return ForAll(repsA, Q -> ForAny(repsB, R -> R in Q^P));
+        # find a bijection between repsA and repsB (up to P-cocl)
+        for Q in repsA do 
+            j := PositionProperty(repsB, R -> R in Q^P);
+            if j = fail then 
+                return false;
+            fi;
+            Remove(repsB, j);
+        od;
+
+        return true;
     end );
 
 InstallMethod(\in,

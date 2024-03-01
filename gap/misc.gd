@@ -47,6 +47,12 @@ DeclareOperation("Automizer", [IsGroupOfAutomorphisms, IsGroup]);
 #! @Returns a homomorphism
 DeclareOperation("AutomizerHomomorphism", [IsGroup, IsGroup]);
 
+#! @Description
+#! Given a group $P$ and a map $\phi \colon A \to B$ with $A, B \leq P$, computes the group $N_\phi$ in $P$. 
+#! @Arguments P phi 
+#! @Returns a group
+DeclareOperation("NPhi", [IsGroup, IsGroupHomomorphism]);
+
 # TODO: Improve code
 #! @Description 
 #! Given two homomorphisms $\phi$ and $\psi$, checks whether $\psi$ is a restriction of $\phi$

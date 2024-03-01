@@ -106,21 +106,6 @@ InstallMethod(FClassReps,
         return reps;
     end );
 
-# InstallMethod(FClassesReps,
-#     "Returns a representative from each $F$-conjugacy class of $P$",
-#     [IsRealizedFusionSystemRep],
-#     function(F)
-#         clP := ConjugacyClassesSubgroups(UnderlyingGroup(P));
-        
-#         # for every partition of clP (wrt isomorphism type),
-#         # for every generator of G/N_G(P),
-#         # add the relation [(A^P)^x, (A^x)^P]
-#         # take the equivalence relation containing these
-#         # return a representative from each
-
-#         return Reps;
-#     end );
-
 InstallMethod(IsFullyNormalized,
     "Checks whether $Q$ is fully $F$-normalized",
     [IsRealizedFusionSystemRep, IsGroup],
@@ -197,4 +182,25 @@ InstallMethod(\=,
         fi;
     end );
 
-# TODO: Check for isomorphism by conjugation in G
+InstallMethod(IsomorphismFusionSystems,
+    "Tries to find an isomorphism between 2 fusion systems",
+    [IsRealizedFusionSystemRep, IsRealizedFusionSystemRep],
+    function(F1, F2)
+        local G, P1, P2, x;
+        
+        if RealizingGroup(F1) <> RealizingGroup(F2) then 
+            TryNextMethod();
+        fi;
+
+        # If P1 and P2 are conjugate in G, then the conjugation map is an isomorphism of fusion systems
+        G := RealizingGroup(F1);
+        P1 := UnderlyingGroup(F1);
+        P2 := UnderlyingGroup(F2);
+
+        x := RepresentativeAction(G, P1, P2);
+        if x <> fail then 
+            return ConjugatorIsomorphism(P1, x);
+        else 
+            TryNextMethod();
+        fi;
+    end );

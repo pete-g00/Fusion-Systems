@@ -66,13 +66,14 @@ InstallMethod(FClassReps,
         local P, label;
 
         P := UnderlyingGroup(F);
-        
-        if IdGroupsAvailable(Size(A)) then 
-            label := String(IdGroup(A));
-            return F!.Subs.(label);
+        label := IsomType(A);
+
+        # Length(label) = 2 <=> we know the isomorphism type
+        if Length(label) = 2 then 
+            return F!.Subs.(String(label));
         else 
-            label := Size(A);
-            return First(F!.Subs.(label), B -> IsomorphismGroups(A, B) <> fail);
+            # TODO: Checking for isomorphism will be slow
+            return First(F!.Subs.(String(label)), B -> IsomorphismGroups(A, B) <> fail);
         fi;
     end );
 
@@ -80,16 +81,25 @@ InstallMethod(FClassesReps,
     "Returns a representative from each $F$-conjugacy class",
     [IsUniversalFusionSystemRep],
     function(F)
-        local P, reps, id;
+        local P, reps, label, PReps, UniqueReps, Q;
 
         P := UnderlyingGroup(F);
         reps := [];
 
-        for id in RecNames(F!.Subs) do
-            if IsScalar(id) then 
-                Append(reps, List(F!.Subs.(id), Representative));
+        for label in RecNames(F!.Subs) do
+            if Length(Positions(label, ',')) = 1 then 
+                # the label is the isom type
+                Add(reps, Representative(F!.Subs.(label)));
             else 
-                Add(reps, Representative(F!.Subs.(id)));
+                # we need to establish the isomorphic subgroups from each P-representative
+                PReps := List(F!.Subs.(label), Representative);
+                UniqueReps := [];
+                for Q in PReps do
+                    if ForAll(UniqueReps, R -> IsomorphismGroups(Q, R) = fail) then 
+                        Add(UniqueReps, Q);
+                    fi;
+                od;
+                Append(reps, UniqueReps);
             fi;
         od;
 

@@ -12,11 +12,14 @@ AddIsomsDFS := function(FReps, F, visited, maps, repIsoms, i, classReps, newAuts
     A := FReps[i];
     visited[i] := true;
     
+    # uses the map phi: A -> B to connect the vertices A and B
     VisitByMap := function(phi)
         local L, B, C, j, rPhi, alpha, beta, AutFC, possibleAuts, aut;
-
+        
+        # find all the subgroups inside Source(phi) that are F-conjugate to A
         L := ContainedFConjugates(F, A, Source(phi));
 
+        # connect the vertices B and phi(B), and collect all the relevant info
         for B in L do 
             C := Image(phi, B);
             j := First([1..Length(FReps)], j -> AreFConjugate(F, C, FReps[j]));
@@ -32,6 +35,7 @@ AddIsomsDFS := function(FReps, F, visited, maps, repIsoms, i, classReps, newAuts
                 repIsoms[j] := RestrictedInverseGeneralMapping(rPhi) * alpha * beta;
                 AutFC := AutF(F, C);
 
+                # TODO: Have fewer generators
                 if not IsTrivial(AutFC) then 
                     possibleAuts := OnFunctionListApplication(GeneratorsOfGroup(AutFC), repIsoms[j]);
                     for aut in possibleAuts do 
@@ -52,6 +56,8 @@ AddIsomsDFS := function(FReps, F, visited, maps, repIsoms, i, classReps, newAuts
     od;
 end;
 
+# Checks whether A and B are F'-conjugate using the isoms given
+# where Isoms are representative isomorphisms (i.e. maps from a F-conjugate to a representative)
 CheckGenFSIsom := function(Isoms, F, A, B)
     local phiA, phiB, psiA, psiB;
 
@@ -61,7 +67,6 @@ CheckGenFSIsom := function(Isoms, F, A, B)
 
     Assert(0, psiB <> fail);
     Assert(0, psiA <> fail);
-
 
     if Image(psiA) <> Image(psiB) then 
         return fail;
@@ -98,8 +103,7 @@ AddNewAutomorphism := function(phi, Q, AutGenList, NewFIsoms, NewFReps, F)
     i := First([1..Length(NewFReps)], i -> NewFReps[i] = Image(psiQ));
     Assert(0, i <> fail);
 
-    # if alpha is not a map already NewFAuts[i]), then add to NewFAuts[i] alpha
-    # Print(AutGenList[i]);
+    # if alpha is not a map already NewFAuts[i]), then add alpha to NewFAuts[i]
     if not alpha in Group(AutGenList[i]) then 
         Add(AutGenList[i], alpha);
     fi;
@@ -129,7 +133,12 @@ InstallMethod(GeneratedFusionSystem,
         for label in RecNames(FReps) do
             reps := FReps.(label);
 
-            # establish the new F-conjugacy class
+            # establish the new F-conjugacy class by visiting the maps
+            # collect also: 
+            # - repIsoms : a map from A -> Q, where Q is a representative in F'
+            # - newReps : a list of representatives Q
+            # - classesReps : a list of F'-representatives of Q up to F-cocl
+            # - newAutList : a list of automorphisms generator maps of Q (combining those from other F-cocl representatives)
             visited := List(reps, Q -> false);
             repIsoms := List(reps, Q -> IdentityMapping(Q));
             newReps := [];
@@ -153,12 +162,8 @@ InstallMethod(GeneratedFusionSystem,
             NewFAuts.(label) := newAutList;
 
             # establish the new automorphisms
-            # if not label in RecNames(NewFAuts) then 
-            #     # TODO: Ensure that we've combined AutF here using the newFClassesReps
-            #     NewFAuts.(label) := List(NewFReps.(label), 
-            #         Q -> ShallowCopy(GeneratorsOfGroup(AutF(F, Q))));
-            # fi;
-
+            # at this point, every map is an automorphism since we've found the F'-cocl
+            # so add the automorphism map for the representative of Q using this map, and the other map in F'
             for A in reps do 
                 for phi in maps do 
                     B := Source(phi);
@@ -205,6 +210,7 @@ InstallMethod(RepresentativeFIsomorphism,
             return fail;
         fi;
 
+        # Try to find an isomorphism A -> B
         data := CheckGenFSIsom(F!.Isoms.(labelA), F!.F, A, B);
         
         if data = fail then 
@@ -228,6 +234,9 @@ InstallMethod(FClassReps,
     function(F, Q)
         local label, phi, R, NewReps;
         
+        # Find the map to the F'-representative conjugate to Q (up to F-cocl)
+        # Return its representatives
+
         label := String(IsomType(Q));
         phi := First(F!.Isoms.(label), phi -> AreFConjugate(F, Source(phi), Q));
         Assert(0, phi <> fail);
@@ -245,8 +254,10 @@ InstallMethod(AutF,
     function(F, A)
         local label, psi, r, AutGens;
 
-        label := String(IsomType(A));
-        
+        # Find the map to the F'-representative conjugate to A (up to F-cocl)
+        # Conjugate AutF of the representative to get AutF of A
+
+        label := String(IsomType(A));        
         psi := First(F!.Isoms.(label), psi -> AreFConjugate(F, Source(psi), A));
         Assert(0, psi <> fail);
         r := RepresentativeFIsomorphism(F, Source(psi), A);
@@ -254,7 +265,6 @@ InstallMethod(AutF,
         AutGens := First(F!.NewFAuts.(label), 
             L -> not IsEmpty(L) and Source(Representative(L)) = Image(psi));
         Assert(0, AutGens <> fail);
-        # Print(Size(Group(AutGens)), "\n");
 
         return Group(OnFunctionListApplication(AutGens, InverseGeneralMapping(psi) * r));
     end );

@@ -123,6 +123,7 @@ InstallMethod(FClassesReps,
         for name in RecNames(C) do 
             c := C.(name);
             # c is a list of subgroups
+            # produce a list of F-representatives in this isomorphism type
             CReps := [];
             for Q in c do 
                 if ForAll(CReps, rep -> not AreFConjugate(F, rep, Q)) then 
@@ -258,16 +259,15 @@ InstallMethod(\in,
         fi;
 
         B := Image(phi);
-        
-        psi := RepresentativeFIsomorphism(F, A, B);
+        psi := RepresentativeFIsomorphism(F, B, A);
 
         if psi = fail then 
             return false;
         fi;
-
-        phi := RestrictedInverseGeneralMapping(phi);
-
-        return psi*phi in AutF(F, A);
+        
+        # phi: A -> B, psi: B -> A
+        # phi lies in Isom(A, B) <=> phi*psi lies in AutF(A)
+        return phi*psi in AutF(F, A);
     end );
 
 InstallMethod(IsFullyNormalized,
@@ -316,49 +316,13 @@ InstallMethod(IsFullyAutomized,
         return PValuation(Size(AutPQ), p) = PValuation(Size(AutFQ), p);
     end );
 
-InstallMethod(NPhi,
-    "Given a fusion system $F$ on $P$ and a map $\\phi$ in $F$, computes $N_\\phi$",
-    [IsFusionSystem, IsGroupHomomorphism],
-    function(F, phi)
-        local P, Q, R, CPQ, NPQ, AutPR, NPhiGens, QCPQ, g, N;
-
-        P := UnderlyingGroup(F);
-        Q := Source(phi);
-        R := Image(phi);
-
-        CPQ := Centralizer(P, Q);
-        NPQ := Normalizer(P, Q);
-        AutPR := Automizer(P, R);
-
-        NPhiGens := Union(GeneratorsOfGroup(Q), GeneratorsOfGroup(CPQ));
-        QCPQ := Group(NPhiGens);
-
-        for g in RightTransversal(NPQ, QCPQ) do 
-            if not g in Group(NPhiGens) and ConjugatorAutomorphismNC(P, g)^phi in AutPR then 
-                Add(NPhiGens, g);
-
-                if Group(NPhiGens) = NPQ then 
-                    return NPQ;
-                fi;
-            fi;
-        od;
-
-        N := Group(NPhiGens);
-
-        if not IsNormal(NPQ, N) then 
-            Print("The map\n", phi, "\nwith N_\\phi: ", N, " is not normal in the normalizer: ", NPQ, "\n");
-        fi;
-
-        return N;
-    end );
-
 InstallMethod(ExtendMapToNPhi,
     "Tries to extend the map $\\phi$ to $N_\\phi$",
     [IsFusionSystem, IsGroupHomomorphism],
     function(F, phi)
         local L;
 
-        L := HomF(F, NPhi(F, phi), Normalizer(UnderlyingGroup(F), Image(phi)));
+        L := HomF(F, NPhi(UnderlyingGroup(F), phi), Normalizer(UnderlyingGroup(F), Image(phi)));
 
         return FindHomExtension(phi, L);
     end );
@@ -372,15 +336,8 @@ InstallMethod(IsFReceptive,
         AutPQ := Automizer(UnderlyingGroup(F), Q);
         AutFQ := AutF(F, Q);
 
-        # OutFQ := RightTransversal(AutFQ, AutPQ);
-
-        # return ForAll(FClassReps(F, Q), function(R)
-        #     local psi;
-
-        #     psi := RepresentativeFIsomorphism(F, Q, R);
-        #     return ForAll(OutFQ, phi -> ExtendMapToNPhi(F, phi * psi) <> fail);
-        # end );
-
+        # Check for every F-isomorphism R -> Q can be extended to N_\phi
+        # TODO: Figure out a way to make fewer checks
         return ForAll(FClassReps(F, Q), 
             R -> ForAll(IsomF(F, R, Q), phi -> ExtendMapToNPhi(F, phi) <> fail));
     end );
@@ -394,6 +351,9 @@ InstallMethod(IsSaturated,
         C := FClassesReps(F);
         Cls := List(C, Q -> FClassReps(F, Q));
 
+        # Check whether every F-class contains a fully automized member (for efficiency),
+        # and if a subgroup is fully normalized, then it is receptive
+        # TODO: Figure out a way to make fewer checks
         return ForAll([1..Length(C)], i -> ForAny(Cls[i], R -> IsFullyAutomized(F, R))) and
             ForAll([1..Length(C)], i -> ForAll(Cls[i], R -> not IsFullyNormalized(F, R) or IsFReceptive(F, R)));
     end );
@@ -488,8 +448,8 @@ InstallMethod(IsomorphismFusionSystems,
 
         # TODO: The speed of this operation depends on the underlying group (choose P1 or P2 depending on which one will be more efficient)
         Auts := AutomorphismGroup(P1);
-        # any map in automorphism of P1 (as a fusion system) won't yield us anything, so we can transverse it?
-
+        
+        # any map in automorphism of P1 (as a fusion system) won't yield us anything, so we can transverse it
         for psi in RightTransversal(Auts, AutF(F, P1)) do 
             sigma := psi*phi;
             if F^sigma = E then 

@@ -367,7 +367,7 @@ gap> Length(F4Norm);
 #############################################################################
 ## NPhi, ExtendMapToNPhi, IsFReceptive
 gap> phi := IdentityMapping(Q);;
-gap> N := NPhi(F1, phi);;
+gap> N := NPhi(P, phi);;
 gap> N = P;
 true
 gap> psi1 := ExtendMapToNPhi(F1, phi);;
@@ -380,7 +380,7 @@ gap> ForAll(psi, m -> Source(m) = P and Range(m) = P);
 true
 gap> ForAll(psi, IsBijective and IsGroupHomomorphism);
 true
-gap> NPhi1 := NPhi(F1, phi1);;
+gap> NPhi1 := NPhi(P, phi1);;
 gap> NPhi1 = Source(phi1);
 true
 gap> psi1 := ExtendMapToNPhi(F1, phi1);;
@@ -393,7 +393,7 @@ gap> First(psi, m -> m = fail) = psi1;
 true
 gap> ForAll(psi{[2..3]}, m -> m <> fail);
 true
-gap> NPhi2 := NPhi(F1, phi2);;
+gap> NPhi2 := NPhi(P, phi2);;
 gap> NPhi2 = Source(phi2);
 true
 gap> psi1 := ExtendMapToNPhi(F1, phi2);;

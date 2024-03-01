@@ -32,6 +32,7 @@ InstallMethod(Prime,
         return F!.p;
     end );
 
+# TODO: Improve these?
 # if \phi \in \Aut(P) and $L$ a list of subgroups of $P$, this is a group action 
 OnListApplication := function(L, phi)
     return List(L, Q -> Image(phi, Q));
@@ -86,9 +87,6 @@ InstallMethod(RepresentativeFIsomorphism,
 
         return phiInv * psi * phi;
     end );
-
-# TODO: Need TransportHom
-# MappedCollection would also be a good thing to construct
 
 InstallMethod(FClassReps,
     "Returns a conjugacy class representative from the $F$-conjugacy class of $Q$",
