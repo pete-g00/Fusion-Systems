@@ -120,70 +120,53 @@ InstallMethod(ConjugationHomomorphism,
         return GroupHomomorphismByFunction(A, B, x -> x^g);
     end );
 
+
 InstallMethod(Automizer,
     "Constructs the automizer \\Aut_G(H) for $G \\leq H$",
     [IsGroup, IsGroup],
     function(G, H)
-        local NGH, CGH, phi, Gens, AutGens, AutG;
+        local NGH, L, AutGH;
 
         if IsGroupOfAutomorphisms(G) then 
             return Automizer(G, H);
         fi;
 
         NGH := Normalizer(G, H);
-        CGH := Centralizer(G, H);
 
-        # Use the arbitrary representation of NGH/CGH to find the generators of AutGH
-        phi := NaturalHomomorphismByNormalSubgroupNC(NGH, CGH);
-        Gens := GeneratorsOfGroup(Image(phi));
-
-        if IsEmpty(Gens) then 
+        L := RemoveRedundantGenerators(List(GeneratorsOfGroup(NGH), a -> ConjugatorAutomorphismNC(H, a)));
+        if IsEmpty(L) then 
             return Group(IdentityMapping(H));
         fi;
 
-        AutGens := List(Gens, 
-            psi -> ConjugatorAutomorphismNC(H, PreImagesRepresentative(phi, psi)));
-        
-        AutG := Group(AutGens);
-        SetIsAutomorphismGroup(AutG, true);
+        AutGH := Group(L);
+        SetIsGroupOfAutomorphisms(AutGH, true);
 
-        return AutG;
+        return AutGH;
     end );
-
-OnImage := function(x, phi)
-    return Image(phi, x);
-end;
 
 InstallMethod(Automizer,
     "Constructs the group of automorphisms induced on G by the group of automorphisms on some overgroup",
     [IsGroupOfAutomorphisms, IsGroup],
     function(Auts, H)
-        local G, NGH, CGH, phi, Gens, AutGens, AutG;
+        local G, A, f1, f2, fAuts, fH, AutfAH, AutAH;
 
         G := Source(Representative(Auts));
         if not IsSubset(G, H) then 
             Error("The automorphisms do not restrict to H");
         fi;
 
-        NGH := Stabilizer(Auts, H, OnImage);
-        CGH := Kernel(ActionHomomorphism(NGH, H, OnImage));
-
-        phi := NaturalHomomorphismByNormalSubgroup(NGH, CGH);
-
-        Gens := GeneratorsOfGroup(Image(phi));
-
-        if IsEmpty(Gens) then 
-            return Group(IdentityMapping(H));
-        fi;
+        A := SemidirectProduct(Auts, G);
+        f1 := Embedding(A, 1);
+        f2 := Embedding(A, 2);
         
-        AutGens := List(Gens, 
-            # TODO: Could this be more efficient?
-            psi -> GroupHomomorphismByFunction(H, H, x -> OnImage(x, PreImagesRepresentative(phi, psi))));
-        
-        AutG := Group(AutGens);
-        SetIsAutomorphismGroup(AutG, true);
+        fAuts := Image(f1);
+        fH := Image(f2, H);
 
-        return AutG;
+        AutfAH := Automizer(fAuts, fH);
+        AutAH := OnAutGroupConjugation(AutfAH, RestrictedInverseGeneralMapping(f2));
+        SetIsGroupOfAutomorphisms(AutAH, true);
+
+        return AutAH;
     end );
 
 InstallMethod(NPhi,
