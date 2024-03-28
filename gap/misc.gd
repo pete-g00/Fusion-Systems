@@ -3,6 +3,53 @@
 
 #! @Section Operations
 
+#! @Description
+#! Given a map $\phi \colon A \to B$ and an element $x \in A$, returns the evaluated value $x^\phi$.
+#! @Arguments x phi
+DeclareGlobalFunction("OnImage");
+
+#! @Description
+#! Given a map $\phi \colon A \to B$ and a map $\psi \colon C \to D$, with $A, B \leq C$, 
+#! returns the conjugated map $\phi^\psi \colon A^\psi \to B^\psi$
+#! @Arguments phi psi
+DeclareGlobalFunction("OnHomConjugation");
+
+#! @Description
+#! Given a list of maps $\phi_i \colon A_i \to B_i$ and a map $\psi \colon C \to D$, with $A_i, B_i \leq C$, 
+#! returns the list of conjugated maps $\phi_i^\psi \colon A_i^\psi \to B_i^\psi$
+#! @Arguments phi psi
+DeclareGlobalFunction("OnHomListConjugation");
+
+#! @Description
+#! Given a group of automorphisms $A$ on the group $P$ and an isomorphism $\psi \colon P \to Q$, returns
+#! the corresponding group of automorphism $A^\psi$ of $Q$.
+#! @Arguments A psi
+DeclareGlobalFunction("OnAutGroupConjugation");
+
+#! @Description
+#! Given a group $P$, defines the action of $H \leq \Aut(P)$ on the conjugacy classes of $P$.
+#! 
+#! In particular, $H$ acts on a conjugacy class $Q^P$ by application, i.e. $\phi \colon Q^P = (Q^\phi)^P$.
+#! 
+#! @Arguments P
+DeclareGlobalFunction("OnCoCl");
+
+#! @Description
+#! Given a homomorphism $\phi \colon P \to Q$, and $A \leq P$ and $Q \leq B$, 
+#! returns the induced homomorphism $\psi \colon A \to B$.
+#! 
+#! This version does not check whether $A \leq P$ and $Q \leq B$.
+#! @Arguments phi A B
+DeclareOperation("RestrictedHomomorphismNC", [IsGroupHomomorphism, IsGroup, IsGroup]);
+
+#! @Description
+#! Given a homomorphism $\phi \colon P \to Q$, and $A \leq P$ and $Q \leq B$, 
+#! returns the induced homomorphism $\psi \colon A \to B$.
+#! 
+#! This version checks whether $A \leq P$ and $Q \leq B$.
+#! @Arguments phi A B
+DeclareOperation("RestrictedHomomorphism", [IsGroupHomomorphism, IsGroup, IsGroup]);
+
 # TODO: Improve code
 # Given subgroups $A$ and $B$ of some group $G$, and a $g \in G$ such that 
 # $A^g \leq B$, defines the homomorphism $A \to B$ by $a \mapsto a^g$

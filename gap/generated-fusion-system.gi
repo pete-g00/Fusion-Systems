@@ -37,7 +37,7 @@ AddIsomsDFS := function(FReps, F, visited, maps, repIsoms, i, classReps, newAuts
 
                 # TODO: Have fewer generators
                 if not IsTrivial(AutFC) then 
-                    possibleAuts := OnFunctionListApplication(GeneratorsOfGroup(AutFC), repIsoms[j]);
+                    possibleAuts := OnHomListConjugation(GeneratorsOfGroup(AutFC), repIsoms[j]);
                     for aut in possibleAuts do 
                         if IsEmpty(newAuts) or not aut in Group(newAuts) then 
                             Add(newAuts, aut);
@@ -266,5 +266,5 @@ InstallMethod(AutF,
             L -> not IsEmpty(L) and Source(Representative(L)) = Image(psi));
         Assert(0, AutGens <> fail);
 
-        return Group(OnFunctionListApplication(AutGens, InverseGeneralMapping(psi) * r));
+        return Group(OnHomListConjugation(AutGens, InverseGeneralMapping(psi) * r));
     end );

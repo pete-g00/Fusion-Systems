@@ -1,3 +1,103 @@
+RemoveRedundantGenerators := function(L)
+    local A, i, j;
+
+    i := First([1..Length(L)], i -> Order(L[i]) > 1);
+    if i = fail then 
+        return [L[1]];
+    fi;
+
+    A := [L[i]];
+    for j in [i..Length(L)] do
+        if Order(L[j]) > 1 and not L[j] in Group(A) then 
+            Add(A, L[j]);
+        fi;
+    od;
+
+    return A;
+end;
+
+Join := function(L...)
+    if Length(L) = 0 then 
+        Error("Cannot join empty");
+    fi;
+
+    if Length(L) = 1 and IsList(L[1]) then 
+        L := L[1];
+    fi;
+
+    return Group(RemoveRedundantGenerators(Flat(List(L, GeneratorsOfGroup))));
+end;
+
+InstallGlobalFunction(OnImage, function(x, phi)
+    return Image(phi, x);
+end );
+
+InstallGlobalFunction(OnHomConjugation, function(phi, psi)
+    local A, C, CGens, CImageGens;
+
+    A := Source(phi);
+    C := Image(psi, A);
+    
+    if phi = IdentityMapping(A) then 
+        return IdentityMapping(C);
+    fi;
+
+    psi := RestrictedHomomorphism(psi, A, C);
+
+    return InverseGeneralMapping(psi) * phi * psi;
+end );
+
+InstallGlobalFunction(OnHomListConjugation, function(L, psi)
+    return List(L, phi -> OnHomConjugation(phi, psi));
+end );
+
+InstallGlobalFunction(OnAutGroupConjugation, function(A, psi)
+    local B;
+
+    B := Group(OnHomListConjugation(GeneratorsOfGroup(A), psi));
+    if IsInjective(psi) then 
+        SetSize(B, Size(A));
+    fi;
+
+    return B;
+end );
+
+InstallGlobalFunction(OnCoCl, function(P)
+    return function(x, phi)
+        return Image(phi, Representative(x))^P;
+    end;
+end );
+
+InstallMethod(RestrictedHomomorphism, 
+    "Given a homomorphism $\\phi \\colon P \\to Q$, and $A \\leq P$ and $Q \\leq B$, returns the induced homomorphism $\\psi \\colon A \\to B$",
+    [IsGroupHomomorphism, IsGroup, IsGroup],
+    function(phi, A, B)
+        local P, Q;
+
+        P := Source(phi);
+        if not IsSubset(P, A) then 
+            Error("A is not a subgroup of the domain.");
+        fi;
+
+        Q := Image(phi, A);
+        if not IsSubset(B, Q) then 
+            Error("The codomain is not a subgroup of B.");
+        fi;
+
+        return RestrictedHomomorphismNC(phi, A, B);
+    end);
+
+InstallMethod(RestrictedHomomorphismNC,
+    "Given a homomorphism $\\phi \\colon P \\to Q$, and $A \\leq P$ and $Q \\leq B$, returns the induced homomorphism $\\psi \\colon A \\to B$",
+    [IsGroupHomomorphism, IsGroup, IsGroup],
+    function(phi, A, B)
+        local AGens, ImageAGens;
+    
+        AGens := GeneratorsOfGroup(A);
+        ImageAGens := List(AGens, a -> Image(phi, a));
+        return GroupHomomorphismByImagesNC(A, B, AGens, ImageAGens);
+    end);
+
 InstallMethod(FindPrimeOfPrimePower, 
     "Given a prime power $q$, returns the prime $p$ whose power it is",
     [IsScalar],
