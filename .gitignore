@@ -1,6 +1,6 @@
 gap/experimentation/*
 gap/db/*
-status/*
+gap/catalogue/*
 
 /gh-pages/
 /tmp
