@@ -1,6 +1,6 @@
-gap/experimentation/*
-gap/db/*
-gap/catalogue/*
+lib/experimentation/*
+lib/db/*
+lib/catalogue/*
 
 /gh-pages/
 /tmp
