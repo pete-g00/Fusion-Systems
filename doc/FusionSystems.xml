@@ -10,6 +10,11 @@
 <#Include SYSTEM "title.xml">
 <TableOfContents/>
 <Body>
+<#Include SYSTEM "_Chapter_Preface.xml">
+<#Include SYSTEM "_Chapter_FClass.xml">
+<#Include SYSTEM "_Chapter_Constructing_a_Fusion_System.xml">
+<#Include SYSTEM "_Chapter_Operations_on_Fusion_Systems.xml">
+<#Include SYSTEM "_Chapter_Miscellaneous_functions.xml">
 <#Include SYSTEM "_AutoDocMainFile.xml">
 </Body>
 <Bibliography Databases="bib.xml"/>

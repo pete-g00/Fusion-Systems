@@ -1,4 +1,4 @@
-#! @Chapter Miscallenous functions
+#! @Chapter Miscellaneous functions
 #! In this section, we define some functionalities about groups and group homomorphisms that are used in the main fusion systems package. It is hoped that these operations will be of use in general.
 
 #! @Section Operations

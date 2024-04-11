@@ -1,7 +1,9 @@
 LoadPackage("AutoDoc");
 
 AutoDoc( rec( 
-    autodoc := true,
+    autodoc := rec(
+        scan_dirs := []
+    ),
     gapdoc := rec(
         LaTeXOptions := rec( EarlyExtraPreamble := """
             \usepackage{amsmath}
@@ -16,7 +18,13 @@ AutoDoc( rec(
         """ )
     ),
     scaffold := rec(
-        # includes := [  ],
+        includes := [ 
+            "_Chapter_Preface.xml",
+            "_Chapter_FClass.xml",
+            "_Chapter_Constructing_a_Fusion_System.xml",
+            "_Chapter_Operations_on_Fusion_Systems.xml",
+            "_Chapter_Miscellaneous_functions.xml"
+        ],
         bib := "bib.xml", 
     )
 ));
