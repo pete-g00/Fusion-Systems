@@ -88,6 +88,9 @@ InstallMethod(FClassReps,
         P := UnderlyingGroup(F);
         G := RealizingGroup(F);
 
+        # from co-cl reps of P, find those that can be conjugate
+        # check whether a rep from each is conjugate
+
         if not(IsSubset(P, Q)) then 
             Error("Q must be a subgroup of P");
         fi;
