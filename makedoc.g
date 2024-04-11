@@ -17,6 +17,6 @@ AutoDoc( rec(
     ),
     scaffold := rec(
         # includes := [  ],
-        # bib := "bib.xml", 
+        bib := "bib.xml", 
     )
 ));

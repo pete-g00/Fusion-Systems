@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE file SYSTEM "bibxmlext.dtd">
+<file>
+  <entry id="AKO">
+    <manual>
+      <author>
+        <name><first>Michael</first><last>Aschbacher</last></name>
+        <name><first>Radha</first><last>Kessar</last></name>
+        <name><first>Robert</first><last>Oliver</last></name>
+      </author>
+      <title><C>Fusion Systems in Algebra and Topology</C></title>
+      <organization>Cambridge University Press</organization>
+      <year>2011</year>
+    </manual>
+  </entry>
+  <entry id="CRA">
+    <manual>
+      <author>
+        <name><first>David</first><last>Craven</last></name>
+      </author>
+      <title><C>The Theory of Fusion Systems: An Algebraic Approach</C></title>
+      <organization>Cambridge University Press</organization>
+      <year>2011</year>
+    </manual>
+  </entry>
+  <entry id="SJP">
+    <manual>
+      <author>
+        <name><first>Sejong</first><last>Park</last></name>
+      </author>
+      <title><C>“Realizing Fusion Systems Inside Finite Groups</C></title>
+      <organization>Proceedings of the American Mathematical Society</organization>
+      <year>2016</year>
+    </manual>
+  </entry>
+</file>
