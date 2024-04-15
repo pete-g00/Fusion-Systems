@@ -26,8 +26,6 @@ lib/catalogue/*
 /doc/*.toc
 /doc/*.txt
 /doc/*.xml.bib
-/doc/AutoDoc.xml
-/doc/_*.xml
 /doc/maketest.g
 /doc/manual.lab
 /doc/manual.six

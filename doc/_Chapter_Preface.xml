@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- This is an automatically generated file. -->
+<Chapter Label="Chapter_Preface">
+<Heading>Preface</Heading>
+
+<P/>
+<Section Label="Chapter_Preface_Section_Introduction_to_the_package">
+<Heading>Introduction to the package</Heading>
+
+<P/>
+A <Emph>fusion system</Emph> <Math>\calF</Math> is a category on a finite <Math>p</Math>-group <Math>P</Math>, with objects the subgroups of <Math>P</Math> and morphisms injective homomorphisms <Math>A \to B</Math>. In particular:
+<List>
+<Item>
+for <Math>x \in P</Math>, the conjugation map <Math>c_x \colon A \to B</Math> lies in <Math>\Hom_\calF(A, B)</Math> for any <Math>A, B \leq P</Math> satisfying <Math>A^x \leq B</Math>;
+</Item>
+<Item>
+for <Math>\phi \in \Hom_\calF(A,B)</Math>, the induced isomorphism <Math>\psi \in \Hom_\calF(A, B^\phi)</Math>; and 
+</Item>
+<Item>
+for <Math>\phi \in \Hom_\calF(A,B)</Math> an isomorphism, the inverse map <Math>\phi^{-1} \in \Hom_\calF(B,A)</Math>.
+</Item>
+</List>
+<P/>
+For example, if <Math>P</Math> lies in some group <Math>G</Math>, then we can define fusion system <Math>\calF_P(G)</Math> by the maps that are realized by elements in <Math>G</Math>, namely the conjugation map <Math>c_x \colon A \to B</Math> lies in <Math>\calF_P(G)</Math> for all <Math>x \in G</Math> satisfying <Math>A^x \leq B</Math>. In fact, by <Cite Key="SJP" />, we know that every fusion system is of this type for some group <Math>G</Math>.
+<P/>
+The axioms of fusion systems allow for a lot of flexibility. As such, we focus in on saturated fusion systems. Broadly speaking, these are the fusion systems where <Math>P</Math> is a Sylow <Math>p</Math>-subgroup of <Math>G</Math>. However, the definition of saturated fusion systems does not require the fusion system to be of this form. Instead, we only know that if <Math>P</Math> is a Sylow <Math>p</Math>-subgroup of <Math>G</Math>, then <Math>\calF_P(G)</Math> is saturated. There is a lot of interest in understanding the fusion systems that are saturated but not of this form, called <Emph>exotic</Emph> fusion systems. More information about fusion systems can be found in <Cite Key="CRA" /> and <Cite Key="AKO" />.
+<P/>
+The aim of this package is to allow basic functions to construct and interact with fusion systems. Currently, we have a characterisation of fusion systems for relatively small <Math>p</Math>-groups. We believe that using this GAP package will prove helpful in characterising a larger set of fusion systems and understanding their structure. There are a lot we don't yet understand about exotic fusion systems, even for small groups, and we hope this package will help us further our knowledge.
+<P/>
+In the first chapter, we describe the ways to construct a fusion system. We provide many ways to do so in order to allow for the most flexibility. The second chapter describes all the properties we can ask about a specific fusion system. The third chapter presents the component <Code>FClass</Code> which stores a <Math>\calF</Math>-conjugacy class of a fusion system. The final chapter lists all the miscallenous functionalities that were needed when defining the package that may be of wider interest.
+<P/>
+</Section>
+
+
+<Section Label="Chapter_Preface_Section_Download_instructions">
+<Heading>Download instructions</Heading>
+
+<P/>
+TODO
+<P/>
+</Section>
+
+
+</Chapter>
+

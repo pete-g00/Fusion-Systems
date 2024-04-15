@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- This is an automatically generated file. -->
+<Chapter Label="Chapter_Miscellaneous_functions">
+<Heading>Miscellaneous functions</Heading>
+
+ In this section, we define some functionalities about groups and group homomorphisms that are used in the main fusion systems package. It is hoped that these operations will be of use in general.
+<Section Label="Chapter_Miscellaneous_functions_Section_Operations">
+<Heading>Operations</Heading>
+
+<ManSection>
+  <Func Arg="x phi" Name="OnImage" />
+ <Description>
+ Given a map <Math>\phi \colon A \to B</Math> and an element <Math>x \in A</Math>, returns the evaluated value <Math>x^\phi</Math>.
+ </Description>
+</ManSection>
+
+
+<ManSection>
+  <Func Arg="phi psi" Name="OnHomConjugation" />
+ <Description>
+ Given a map <Math>\phi \colon A \to B</Math> and a map <Math>\psi \colon C \to D</Math>, with <Math>A, B \leq C</Math>, 
+ returns the conjugated map <Math>\phi^\psi \colon A^\psi \to B^\psi</Math>
+ </Description>
+</ManSection>
+
+
+<ManSection>
+  <Func Arg="phi psi" Name="OnHomListConjugation" />
+ <Description>
+ Given a list of maps <Math>\phi_i \colon A_i \to B_i</Math> and a map <Math>\psi \colon C \to D</Math>, with <Math>A_i, B_i \leq C</Math>, 
+ returns the list of conjugated maps <Math>\phi_i^\psi \colon A_i^\psi \to B_i^\psi</Math>
+ </Description>
+</ManSection>
+
+
+<ManSection>
+  <Func Arg="A psi" Name="OnAutGroupConjugation" />
+ <Description>
+ Given a group of automorphisms <Math>A</Math> on the group <Math>P</Math> and an isomorphism <Math>\psi \colon P \to Q</Math>, returns
+ the corresponding group of automorphism <Math>A^\psi</Math> of <Math>Q</Math>.
+ </Description>
+</ManSection>
+
+
+<ManSection>
+  <Func Arg="P" Name="OnCoCl" />
+ <Description>
+ Given a group <Math>P</Math>, defines the action of <Math>H \leq \Aut(P)</Math> on the conjugacy classes of <Math>P</Math>.
+<P/>
+ In particular, <Math>H</Math> acts on a conjugacy class <Math>Q^P</Math> by application, i.e. <Math>\phi \colon Q^P = (Q^\phi)^P</Math>.
+<P/>
+ </Description>
+</ManSection>
+
+
+<ManSection>
+  <Oper Arg="phi A B" Name="RestrictedHomomorphismNC" Label="for IsGroupHomomorphism, IsGroup, IsGroup"/>
+ <Description>
+ Given a homomorphism <Math>\phi \colon P \to Q</Math>, and <Math>A \leq P</Math> and <Math>Q \leq B</Math>, 
+ returns the induced homomorphism <Math>\psi \colon A \to B</Math>.
+<P/>
+ This version does not check whether <Math>A \leq P</Math> and <Math>Q \leq B</Math>.
+ </Description>
+</ManSection>
+
+
+<ManSection>
+  <Oper Arg="phi A B" Name="RestrictedHomomorphism" Label="for IsGroupHomomorphism, IsGroup, IsGroup"/>
+ <Description>
+ Given a homomorphism <Math>\phi \colon P \to Q</Math>, and <Math>A \leq P</Math> and <Math>Q \leq B</Math>, 
+ returns the induced homomorphism <Math>\psi \colon A \to B</Math>.
+<P/>
+ This version checks whether <Math>A \leq P</Math> and <Math>Q \leq B</Math>.
+ </Description>
+</ManSection>
+
+
+<ManSection>
+  <Oper Arg="q" Name="FindPrimeOfPrimePower" Label="for IsScalar"/>
+ <Description>
+ Given a prime power <Math>q = p^n</Math>, returns the prime <Math>p</Math>. If <Math>q</Math> is not a prime power, then returns <Code>fail</Code>.
+ </Description>
+</ManSection>
+
+
+<Example><![CDATA[
+gap> FindPrimeOfPrimePower(1024);
+2
+gap> FindPrimeOfPrimePower(10);
+fail
+]]></Example>
+
+
+<ManSection Label="Automizers">
+  <Oper Arg="G H" Name="Automizer" Label="for IsGroup, IsGroup"/>
+  <Oper Arg="A H" Name="Automizer" Label="for IsGroupOfAutomorphisms, IsGroup"/>
+ <Returns>a group
+</Returns>
+ <Description>
+<P/>
+ Let <Math>G</Math> be a group, <Math>H</Math> a subgroup of <Math>G</Math>, and <Math>A \leq \Aut(G)</Math>.
+<P/>
+ The operation <Code>Automizer(G, H)</Code> computes the automorphism group of <Math>H</Math> induced by conjugation in <Math>G</Math>, denoted <Math>\Aut_G(H)</Math>. Specifically, we return the group
+ <Display>\Aut_G(H) = \{c_g \in \Aut(H) \mid g \in N_G(H)\},</Display>
+ where <Math>c_g \in \Aut(H)</Math> is the map given by conjugation, i.e. <Math>xc_g = x^g</Math> for <Math>x \in H</Math>.
+<P/>
+ The operation <Code>Automizer(A, H)</Code> returns the automorphism group of <Math>H</Math> induced maps in <Math>A</Math>, denoted <Math>\Aut_A(H)</Math>. Specifically, we return the group
+ <Display>\Aut_A(H) = \{\phi \in \Aut(G) \mid \phi|_H \in \Aut(H)\},</Display>
+<P/>
+ </Description>
+</ManSection>
+
+
+<ManSection>
+  <Oper Arg="G H" Name="AutomizerHomomorphism" Label="for IsGroup, IsGroup"/>
+ <Returns>a homomorphism
+</Returns>
+ <Description>
+ Given a group <Math>G</Math> and a subgroup <Math>H</Math>, the operation <Code>AutomizerHomomorphism(G, H)</Code> constructs the automizer homomorphism <Math>c \colon N_G(H) \to \Aut_G(H)</Math>. This is the homomorphism that maps every <Math>g \in N_G(H)</Math> to the automorphism map <Math>c_g \in \Aut(H)</Math> given by conjugation, i.e. <Math>xc_g = x^g</Math> for <Math>x \in H</Math>.
+<P/>
+ </Description>
+</ManSection>
+
+
+<ManSection>
+  <Oper Arg="P phi" Name="NPhi" Label="for IsGroup, IsGroupHomomorphism"/>
+ <Returns>a group
+</Returns>
+ <Description>
+ Given a group <Math>P</Math> and a map <Math>\phi \colon A \to B</Math> with <Math>A, B \leq P</Math>, computes the group <Math>N_\phi</Math> in <Math>P</Math>. 
+ </Description>
+</ManSection>
+
+
+<ManSection>
+  <Oper Arg="phi psi" Name="IsRestrictedHomomorphism" Label="for IsGroupHomomorphism, IsGroupHomomorphism"/>
+ <Returns><Code>true</Code> or <Code>false</Code>
+</Returns>
+ <Description>
+ Given two homomorphisms <Math>\phi</Math> and <Math>\psi</Math>, checks whether <Math>\psi</Math> is a restriction of <Math>\phi</Math>
+<P/>
+ </Description>
+</ManSection>
+
+
+<ManSection>
+  <Oper Arg="phi L" Name="FindHomExtension" Label="for IsGroupHomomorphism, IsCollection"/>
+ <Returns>an automorphism or <Code>fail</Code>
+</Returns>
+ <Description>
+ Let <Math>G</Math> be a group, with subgroups <Math>A</Math> and <Math>B</Math> and a homomorphism <Math>\phi \colon A \to B</Math>. If <Math>L \subseteq \Aut(P)</Math>, then the operation <Code>FindHomExtension(phi, L)</Code> finds an extension in <Math>L</Math> of <Math>\phi</Math>. If we cannot find an extension, then the operation returns <Code>fail</Code>.
+<P/>
+ </Description>
+</ManSection>
+
+
+<ManSection>
+  <Oper Arg="G M p" Name="IsStronglyPEmbedded" Label="for IsGroup, IsGroup, IsScalar"/>
+ <Returns><Code>true</Code> or <Code>false</Code>
+</Returns>
+ <Description>
+ Given a group <Math>G</Math>, a subgroup <Math>M</Math> and a prime <Math>p</Math>, checks whether <Math>H</Math> is strongly <Math>p</Math>-embedded.
+ </Description>
+</ManSection>
+
+
+<Example><![CDATA[
+gap> P := Group((1,2,3), (1,3));
+Group([ (1,2,3), (1,3) ])
+gap> Q := Group(P.1);
+Group([ (1,2,3) ])
+gap> IsStronglyPEmbedded(P, Q, 2);
+false
+gap> IsStronglyPEmbedded(P, Q, 3);
+true
+]]></Example>
+
+
+</Section>
+
+
+</Chapter>
+

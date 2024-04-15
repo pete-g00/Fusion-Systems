@@ -1,0 +1,405 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- This is an automatically generated file. -->
+<Chapter Label="Chapter_Operations_on_Fusion_Systems">
+<Heading>Operations on Fusion Systems</Heading>
+
+<Section Label="Chapter_Operations_on_Fusion_Systems_Section_Core_Functionality">
+<Heading>Core Functionality</Heading>
+
+ The core operations are those that we deem the most important when dealing with a fusion system <Math>\calF</Math>. These include finding the underlying group/prime of the fusion system and finding an isomorphism between 2 <Math>\calF</Math>-conjugate subgroups.
+<P/>
+ The implementation of most of these core attributes is dictated by the representation we choose. This means that it may be more efficient to interact with a fusion system depending on its representation.
+<ManSection>
+  <Attr Arg="F" Name="UnderlyingGroup" Label="for IsFusionSystem"/>
+ <Returns>a group
+</Returns>
+ <Description>
+ Given a fusion system <Math>\calF</Math> on a finite <Math>p</Math>-group <Math>P</Math>, returns the group <Math>P</Math>.
+ </Description>
+</ManSection>
+
+
+<ManSection>
+  <Attr Arg="F" Name="Prime" Label="for IsFusionSystem"/>
+ <Returns>a prime
+</Returns>
+ <Description>
+ Given a fusion system <Math>\calF</Math> on a finite <Math>p</Math>-group <Math>P</Math>, returns the prime <Math>p</Math>.
+ </Description>
+</ManSection>
+
+
+<ManSection>
+  <Oper Arg="F A" Name="AutF" Label="for IsFusionSystem, IsGroup"/>
+ <Returns>a group
+</Returns>
+ <Description>
+ Given a fusion system <Math>\calF</Math> on a finite <Math>p</Math>-group <Math>P</Math> and a subgroup <Math>A \leq P</Math>, returns the group of automorphisms <Math>\Aut_\calF(A)</Math>.
+ </Description>
+</ManSection>
+
+
+<ManSection>
+  <Oper Arg="F A B" Name="RepresentativeFIsomorphism" Label="for IsFusionSystem, IsGroup, IsGroup"/>
+ <Returns>an isomorphism or <Code>fail</Code>
+</Returns>
+ <Description>
+ Given a fusion system <Math>\calF</Math> on a finite <Math>p</Math>-group <Math>P</Math> and subgroup <Math>A, B \leq P</Math>, returns a representative isomorphism between them if they are <Math>\calF</Math>-conjugate, and <Code>fail</Code> otherwise.
+ </Description>
+</ManSection>
+
+
+<ManSection>
+  <Oper Arg="F Q" Name="FClassReps" Label="for IsFusionSystem, IsGroup"/>
+ <Returns>a list of groups
+</Returns>
+ <Description>
+ Given a fusion system <Math>\calF</Math> on a finite <Math>p</Math>-group <Math>P</Math> and a subgroup <Math>Q \leq P</Math>, returns all groups in the <Math>\calF</Math>-conjugacy class of <Math>Q</Math>, up to <Math>P</Math>-conjugacy class.
+ </Description>
+</ManSection>
+
+
+<ManSection>
+  <Attr Arg="F" Name="FClassesReps" Label="for IsFusionSystem"/>
+ <Returns>a list of groups
+</Returns>
+ <Description>
+ Given a fusion system <Math>\calF</Math> on a finite <Math>p</Math>-group <Math>P</Math>, returns a representative from each <Math>\calF</Math>-conjugacy class in <Math>P</Math>. 
+<P/>
+ This operation is time consuming since we need to find a representative from each <Math>P</Math>-conjugacy class, and then find which of them are <Math>\calF</Math>-conjugate.
+<P/>
+ </Description>
+</ManSection>
+
+
+<ManSection>
+  <Oper Arg="F A B" Name="ContainedFConjugates" Label="for IsFusionSystem, IsGroup, IsGroup"/>
+ <Returns>a list of groups
+</Returns>
+ <Description>
+ Given a fusion system <Math>\calF</Math> on a finite <Math>p</Math>-group <Math>P</Math>, returns all the <Math>\calF</Math>-conjugates of <Math>A</Math> that are subsets of <Math>B</Math>.
+<P/>
+ </Description>
+</ManSection>
+
+
+</Section>
+
+
+<Section Label="Chapter_Operations_on_Fusion_Systems_Section_Complete_Functionality">
+<Heading>Complete Functionality</Heading>
+
+ These operations complement the core functionality. In particular, all of these operations make use of the core operations, which return a representative whenever possible, and give a complete list of values. Since these operations make use of the core functionality, it is possible that certain representations perform better than others.
+<ManSection>
+  <Oper Arg="F A" Name="FClass" Label="for IsFusionSystem, IsGroup"/>
+ <Returns>a <Math>\calF</Math>-class
+</Returns>
+ <Description>
+ Given a fusion system <Math>\calF</Math> on a finite <Math>p</Math>-group and a subgroup <Math>A \leq P</Math>, returns all the subgroups in the <Math>\calF</Math>-conjugacy class of <Math>A</Math>. This operation returns a collection, represented by an <Code>IsFClass</Code> object.
+<P/>
+ This operation makes use of the core operation <Code>FClassReps</Code>. 
+ </Description>
+</ManSection>
+
+
+<ManSection>
+  <Attr Arg="F" Name="FClasses" Label="for IsFusionSystem"/>
+ <Returns>a list of groups
+</Returns>
+ <Description>
+ Given a fusion system <Math>\calF</Math> on a finite <Math>p</Math>-group <Math>P</Math>, returns a list of <Math>\calF</Math>-conjugacy classes of <Math>P</Math>. 
+<P/>
+ This operation makes use of the core operation <Code>FClassesReps</Code>.
+ </Description>
+</ManSection>
+
+
+<ManSection>
+  <Oper Arg="F A B" Name="IsomF" Label="for IsFusionSystem, IsGroup, IsGroup"/>
+ <Returns>a list of isomorphisms
+</Returns>
+ <Description>
+ Given a fusion system <Math>\calF</Math> on a finite <Math>p</Math>-group <Math>P</Math> and subgroups <Math>A, B \leq P</Math>, returns a list of isomorphisms <Math>A \to B</Math> in <Math>\calF</Math>, i.e. the set <Math>\Isom_\calF(A, B)</Math>. If <Math>A</Math> and <Math>B</Math> are not <Math>\calF</Math>-conjugate, then this operation returns an empty list. 
+ </Description>
+</ManSection>
+
+
+<ManSection>
+  <Oper Arg="F A B" Name="HomF" Label="for IsFusionSystem, IsGroup, IsGroup"/>
+ <Returns>a list of homomorphisms
+</Returns>
+ <Description>
+ Given a fusion system <Math>\calF</Math> on a finite <Math>p</Math>-group <Math>P</Math> and subgroups <Math>A, B \leq P</Math>, returns a list of homomorphisms <Math>A \to B</Math> in <Math>\calF</Math>, i.e. the set <Math>\Hom_\calF(A, B)</Math>. 
+ </Description>
+</ManSection>
+
+
+</Section>
+
+
+<Section Label="Chapter_Operations_on_Fusion_Systems_Section_Auxiliary_Operations">
+<Heading>Auxiliary Operations</Heading>
+
+ The auxiliary operations on fusion systems are those that allow us to infer certain properties about the subgroups, such as checking whether a subgroup is fully normalized. They make use of the core operations, and not their complete versions, for efficiency whenever possible. 
+<ManSection>
+  <Oper Arg="F A B" Name="AreFConjugate" Label="for IsFusionSystem, IsGroup, IsGroup"/>
+ <Returns><Code>true</Code> or <Code>false</Code>
+</Returns>
+ <Description>
+ Given a fusion system <Math>\calF</Math> on a finite <Math>p</Math>-group <Math>P</Math> and a subgroups <Math>A, B \leq P</Math>, checks whether <Math>A</Math> and <Math>B</Math> are <Math>\calF</Math>-conjugate. 
+ </Description>
+</ManSection>
+
+
+<ManSection>
+  <Oper Arg="phi F" Name="\in" Label="for IsGroupHomomorphism, IsFusionSystem"/>
+ <Returns><Code>true</Code> or <Code>false</Code>
+</Returns>
+ <Description>
+ Given a fusion system <Math>\calF</Math> on a finite <Math>p</Math>-group <Math>P</Math> and a map <Math>\phi \colon A \to B</Math>, checks whether <Math>A, B \leq P</Math> and <Math>\phi \in \Hom_\calF(A, B)</Math>. 
+ </Description>
+</ManSection>
+
+
+<ManSection>
+  <Oper Arg="F A" Name="IsFullyNormalized" Label="for IsFusionSystem, IsGroup"/>
+ <Returns><Code>true</Code> or <Code>false</Code>
+</Returns>
+ <Description>
+ Given a fusion system <Math>\calF</Math> on a finite <Math>p</Math>-group <Math>P</Math> and a subgroup <Math>A \leq P</Math>, checks whether <Math>A</Math> is fully <Math>\calF</Math>-normalized. 
+ </Description>
+</ManSection>
+
+
+<ManSection>
+  <Oper Arg="F A" Name="IsFullyCentralized" Label="for IsFusionSystem, IsGroup"/>
+ <Returns><Code>true</Code> or <Code>false</Code>
+</Returns>
+ <Description>
+ Given a fusion system <Math>\calF</Math> on a finite <Math>p</Math>-group <Math>P</Math> and a subgroup <Math>A \leq P</Math>, checks whether <Math>A</Math> is fully <Math>\calF</Math>-centralized. 
+ </Description>
+</ManSection>
+
+
+<ManSection>
+  <Oper Arg="F A" Name="IsFullyAutomized" Label="for IsFusionSystem, IsGroup"/>
+ <Returns><Code>true</Code> or <Code>false</Code>
+</Returns>
+ <Description>
+ Given a fusion system <Math>\calF</Math> on a finite <Math>p</Math>-group <Math>P</Math> and a subgroup <Math>A \leq P</Math>, checks whether <Math>A</Math> is fully <Math>\calF</Math>-centralized. 
+ </Description>
+</ManSection>
+
+
+<Example><![CDATA[
+gap> G := AlternatingGroup(4);
+Alt( [ 1 .. 4 ] )
+gap> H := SymmetricGroup(4);
+Sym( [ 1 .. 4 ] )
+gap> P := SylowSubgroup(G, 2);
+Group([ (1,2)(3,4), (1,3)(2,4) ])
+gap> F1 := RealizedFusionSystem(G, P);
+Fusion System on Group( [ (1,2)(3,4), (1,3)(2,4) ] )
+gap> F2 := RealizedFusionSystem(H, P);
+Fusion System on Group( [ (1,2)(3,4), (1,3)(2,4) ] )
+gap> IsFullyNormalized(F1, P);
+true
+gap> IsFullyCentralized(F2, P);
+true
+gap> IsFullyAutomized(F1, P);
+true
+gap> IsFullyAutomized(F2, P);
+false
+]]></Example>
+
+
+<ManSection>
+  <Oper Arg="F phi" Name="ExtendMapToNPhi" Label="for IsFusionSystem, IsGroupHomomorphism"/>
+ <Returns>a homomorphism or <Code>fail</Code>
+</Returns>
+ <Description>
+ Given a fusion system <Math>\calF</Math> on a finite <Math>p</Math>-group <Math>P</Math> and a map <Math>\phi \colon A \to B</Math> in <Math>\calF</Math>, tries to extend this map to <Math>\overline{\phi} \colon N_\phi \to N_P(B)</Math>. If successful, we return the given map; otherwise, we return <Code>fail</Code>.
+ </Description>
+</ManSection>
+
+
+<ManSection>
+  <Oper Arg="F A" Name="IsFReceptive" Label="for IsFusionSystem, IsGroup"/>
+ <Returns><Code>true</Code> or <Code>false</Code>
+</Returns>
+ <Description>
+ Given a fusion system <Math>\calF</Math> on a finite <Math>p</Math>-group <Math>P</Math> and a subgroup <Math>A \leq P</Math>, checks whether <Math>A</Math> is <Math>\calF</Math>-receptive.
+ </Description>
+</ManSection>
+
+
+<Example><![CDATA[
+gap> G := SymmetricGroup(4);
+Sym( [ 1 .. 4 ] )
+gap> P := SylowSubgroup(G, 2);
+Group([ (1,2), (3,4), (1,3)(2,4) ])
+gap> A := Group(P.1);
+Group([ (1,2) ])
+gap> B := Group(P.3);
+Group([ (1,3)(2,4) ])
+gap> F := RealizedFusionSystem(G, P);
+Fusion System on Group( [ (1,2), (3,4), (1,3)(2,4) ] )
+gap> IsFReceptive(F, A);
+true
+gap> IsFReceptive(F, B);
+false
+]]></Example>
+
+
+<ManSection>
+  <Oper Arg="F A" Name="IsFCentric" Label="for IsFusionSystem, IsGroup"/>
+ <Returns><Code>true</Code> or <Code>false</Code>
+</Returns>
+ <Description>
+ Given a fusion system <Math>\calF</Math> on a finite <Math>p</Math>-group <Math>P</Math> and a subgroup <Math>A \leq P</Math>, checks whether <Math>A</Math> is <Math>\calF</Math>-centric. 
+ </Description>
+</ManSection>
+
+
+<ManSection>
+  <Oper Arg="F A" Name="IsFRadical" Label="for IsFusionSystem, IsGroup"/>
+ <Returns><Code>true</Code> or <Code>false</Code>
+</Returns>
+ <Description>
+ Given a fusion system <Math>\calF</Math> on a finite <Math>p</Math>-group <Math>P</Math> and a subgroup <Math>A \leq P</Math>, checks whether <Math>A</Math> is <Math>\calF</Math>-radical. 
+ </Description>
+</ManSection>
+
+
+<ManSection>
+  <Oper Arg="F A" Name="IsFEssential" Label="for IsFusionSystem, IsGroup"/>
+ <Returns><Code>true</Code> or <Code>false</Code>
+</Returns>
+ <Description>
+ Given a fusion system <Math>\calF</Math> on a finite <Math>p</Math>-group <Math>P</Math> and a subgroup <Math>A \leq P</Math>, checks whether <Math>A</Math> is essential in <Math>\calF</Math>. 
+ </Description>
+</ManSection>
+
+
+<Example><![CDATA[
+gap> G := AlternatingGroup(6);
+Alt( [ 1 .. 6 ] )
+gap> P := SylowSubgroup(G, 2);
+Group([ (1,2)(3,4), (1,3)(2,4), (1,2)(5,6) ])
+gap> H := Group(P.1, P.2, P.3, (3,5)(4,6));
+Group([ (1,2)(3,4), (1,3)(2,4), (1,2)(5,6), (3,5)(4,6) ])
+gap> A := Group(P.1, P.2);
+Group([ (1,2)(3,4), (1,3)(2,4) ])
+gap> B := Group(P.1, P.3);
+Group([ (1,2)(3,4), (1,2)(5,6) ])
+gap> F1 := RealizedFusionSystem(G, P);
+Fusion System on Group( [ (1,2)(3,4), (1,3)(2,4), (1,2)(5,6) ] )
+gap> F2 := RealizedFusionSystem(H, P);
+Fusion System on Group( [ (1,2)(3,4), (1,3)(2,4), (1,2)(5,6) ] )
+gap> IsFEssential(F1, A);
+true
+gap> IsFEssential(F1, B);
+true
+gap> IsFEssential(F2, B);
+true
+gap> IsFEssential(F2, A);
+false
+]]></Example>
+
+
+<ManSection>
+  <Prop Arg="F" Name="IsSaturated" Label="for IsFusionSystem"/>
+ <Returns><K>true</K> or <K>false</K>
+</Returns>
+ <Description>
+ Given a fusion system <Math>\calF</Math> on a finite <Math>p</Math>-group <Math>P</Math>, checks whether <Math>\calF</Math> is saturated. 
+ </Description>
+</ManSection>
+
+
+<Example><![CDATA[
+gap> G := AlternatingGroup(4);
+Alt( [ 1 .. 4 ] )
+gap> H := SymmetricGroup(4);
+Sym( [ 1 .. 4 ] )
+gap> P := SylowSubgroup(G, 2);
+Group([ (1,2)(3,4), (1,3)(2,4) ])
+gap> F1 := RealizedFusionSystem(G, P);
+Fusion System on Group( [ (1,2)(3,4), (1,3)(2,4) ] )
+gap> F2 := RealizedFusionSystem(H, P);
+Fusion System on Group( [ (1,2)(3,4), (1,3)(2,4) ] )
+gap> IsSaturated(F1);
+true
+gap> IsSaturated(F2);
+false
+]]></Example>
+
+
+<ManSection>
+  <Oper Arg="F1 F2" Name="\=" Label="for IsFusionSystem, IsFusionSystem"/>
+ <Returns><Code>true</Code> or <Code>false</Code>
+</Returns>
+ <Description>
+ Given two fusion systems <Math>\calF_1</Math> and <Math>\calF_2</Math> on finite <Math>p</Math>-groups <Math>P_1</Math> and <Math>P_2</Math> respectively, checks whether <Math>\calF_1 = \calF_2</Math>. 
+ </Description>
+</ManSection>
+
+
+<Example><![CDATA[
+gap> G1 := AlternatingGroup(4);
+Alt( [ 1 .. 4 ] )
+gap> G2 := SymmetricGroup(4);
+Sym( [ 1 .. 4 ] )
+gap> G3 := Group(G1.1, G1.2, (5,6));
+Group([ (1,2,3), (2,3,4), (5,6) ])
+gap> P := SylowSubgroup(G1, 2);
+Group([ (1,2)(3,4), (1,3)(2,4) ])
+gap> F1 := RealizedFusionSystem(G1, P);
+Fusion System on Group( [ (1,2)(3,4), (1,3)(2,4) ] )
+gap> F2 := RealizedFusionSystem(G2, P);
+Fusion System on Group( [ (1,2)(3,4), (1,3)(2,4) ] )
+gap> F3 := RealizedFusionSystem(G3, P);
+Fusion System on Group( [ (1,2)(3,4), (1,3)(2,4) ] )
+gap> F1 = F1;
+true
+gap> F1 = F2;
+false
+gap> F1 = F3;
+true
+]]></Example>
+
+
+<ManSection>
+  <Oper Arg="F1 F2" Name="IsomorphismFusionSystems" Label="for IsFusionSystem, IsFusionSystem"/>
+ <Returns>an isomorphism or <Code>fail</Code>
+</Returns>
+ <Description>
+ Given fusion systems <Math>\calF_1</Math> and <Math>\calF_2</Math> on a finite <Math>p</Math>-groups <Math>P</Math> and <Math>Q</Math> respectively, tries to find an isomorphism of fusion systems <Math>\calF_1 \to \calF_2</Math>. If there is no such isomorphism, returns <Code>fail</Code>.
+ </Description>
+</ManSection>
+
+
+<Example><![CDATA[
+gap> G1 := AlternatingGroup(4);
+Alt( [ 1 .. 4 ] )
+gap> P1 := SylowSubgroup(G, 2);
+Group([ (1,2)(3,4), (1,3)(2,4) ])
+gap> F1 := RealizedFusionSystem(G1, P1);
+Fusion System on Group( [ (1,2)(3,4), (1,3)(2,4) ] )
+gap> P2 := ElementaryAbelianGroup(4);
+<pc group of size 4 with 2 generators>
+gap> phi := GroupHomomorphismByImages(P2, [P2.1, P2.2], [P2.2, P2.1*P2.2]);
+[ f1, f2 ] -> [ f2, f1*f2 ]
+gap> F2 := GeneratedFusionSystem(P2, [phi]);
+Fusion System on Group( [ (1,2)(3,4), (1,3)(2,4) ] )
+gap> IsomorphismFusionSystems(F1, F2);
+[ (1,2)(3,4), (1,3)(2,4) ] -> [ f1, f2 ]
+]]></Example>
+
+
+</Section>
+
+
+</Chapter>
+

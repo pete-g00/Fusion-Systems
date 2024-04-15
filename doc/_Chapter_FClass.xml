@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- This is an automatically generated file. -->
+<Chapter Label="Chapter_FClass">
+<Heading>FClass</Heading>
+
+ We represent a <Math>\calF</Math>-conjugacy class with the category <Code>IsFClass</Code>. In the current implementation, we construct a <Math>\calF</Math>-conjugacy class by providing a list of <Math>P</Math>-conjugacy class representatives. 
+<P/>
+ For efficiency, we do not represent a <Math>\calF</Math>-class as a list. It is instead a collection, like conjugacy class of a group.
+ An example of all the functionalities is given in the example below
+<Section Label="Chapter_FClass_Section_Operations">
+<Heading>Operations</Heading>
+
+<ManSection>
+  <Attr Arg="C" Name="UnderlyingFusionSystem" Label="for IsFClass"/>
+ <Returns>a fusion system
+</Returns>
+ <Description>
+ Given a <Math>\calF</Math>-class <Math>C</Math> of a fusion system <Math>\calF</Math>, returns <Math>\calF</Math>.
+ </Description>
+</ManSection>
+
+
+<ManSection>
+  <Attr Arg="C" Name="ConjugacyClassRepresentatives" Label="for IsFClass"/>
+ <Returns>a list of subgroups
+</Returns>
+ <Description>
+ Given a <Math>\calF</Math>-class <Math>C</Math> of a fusion system <Math>\calF</Math>, returns the a list of <Math>P</Math>-conjugacy class representatives that forms <Math>C</Math>.
+ </Description>
+</ManSection>
+
+
+<ManSection>
+  <Oper Arg="C1 C2" Name="\=" Label="for IsFClass, IsFClass"/>
+ <Returns><Code>true</Code> or <Code>false</Code>
+</Returns>
+ <Description>
+ Given two <Math>\calF</Math>-conjugacy classes <Math>C_1</Math> and <Math>C_2</Math>, possibly of different fusion systems <Math>\calF_1</Math> and <Math>\calF_2</Math>, checks whether <Math>C_1</Math> and <Math>C_2</Math> are equal as sets. It is not necessary that both <Math>C_1</Math> and <Math>C_2</Math> are <Math>\calF</Math>-conjugacy classes have the same underlying fusion system.
+ </Description>
+</ManSection>
+
+
+<Example><![CDATA[
+gap> G := AlternatingGroup(6);
+Alt( [ 1 .. 6 ] )
+gap> P := SylowSubgroup(G, 2);
+Group([ (1,2)(3,4), (1,3)(2,4), (1,2)(5,6) ])
+gap> Q := Group(P.1);
+Group([ (1,2)(3,4) ])
+gap> R := Group(P.2);
+Group([ (1,3)(2,4) ])
+gap> F1 := RealizedFusionSystem(G, P);
+Fusion System on Group( [ (1,2)(3,4), (1,3)(2,4), (1,2)(5,6) ] )
+gap> F2 := RealizedFusionSystem(P, P);
+Fusion System on Group( [ (1,2)(3,4), (1,3)(2,4), (1,2)(5,6) ] )
+gap> FClass(F1, P) = FClass(F1, P);
+true
+gap> FClass(F1, Q) = FClass(F2, Q);
+false
+gap> FClass(F1, Q) = FClass(F2, R);
+false
+gap> FClass(F1, Q) = FClass(F1, R);
+true
+]]></Example>
+
+
+<ManSection>
+  <Oper Arg="A C" Name="\in" Label="for IsGroup, IsFClass"/>
+ <Returns><Code>true</Code> or <Code>false</Code>
+</Returns>
+ <Description>
+ Given a <Math>\calF</Math>-class <Math>C</Math> of a fusion system <Math>\calF</Math> on <Math>P</Math> and a subgroup <Math>A \leq P</Math>, checks whether <Math>A</Math> is contained in <Math>C</Math>.
+ </Description>
+</ManSection>
+
+
+<Example><![CDATA[
+gap> G := AlternatingGroup(6);
+Alt( [ 1 .. 6 ] )
+gap> P := SylowSubgroup(G, 2);
+Group([ (1,2)(3,4), (1,3)(2,4), (1,2)(5,6) ])
+gap> Q := Group(P.1);
+Group([ (1,2)(3,4) ])
+gap> R := Group(P.2);
+Group([ (1,3)(2,4) ])
+gap> F1 := RealizedFusionSystem(G, P);
+Fusion System on Group( [ (1,2)(3,4), (1,3)(2,4), (1,2)(5,6) ] )
+gap> F2 := RealizedFusionSystem(P, P);
+Fusion System on Group( [ (1,2)(3,4), (1,3)(2,4), (1,2)(5,6) ] )
+gap> Q in FClass(F1, Q);
+true
+gap> Q in FClass(F1, R);
+true
+gap> Q in FClass(F2, R);
+false
+]]></Example>
+
+
+</Section>
+
+
+</Chapter>
+
